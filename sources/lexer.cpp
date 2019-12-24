@@ -20,31 +20,35 @@ namespace hcc
 		{ INTEGER_DECL,"int" },{ DOUBLE_DECL,"double" },{ BOOL_DECL,"bool" },{ VOID_DECL,"void" },{CHAR_DECL,"CHAR_DECL"},{SHORT_DECL,"short"},
 		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
-		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
+		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ BIT_AND,"BIT_AND" },
 		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
 		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
 		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
 		{ ENDL,"ENDL" },{ PRINT,"PRINT" },{ CAST,"CAST" },
 		{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{SIZEOF,"SIZEOF"},
+		{SXOR,"%="},{SL,"<<"},{SR,">>"},{SSL,"<<="},{SSR,">>="},{SOR,"|="},{SMOD,"%="},{MOD,"%"},{SAND,"&="},
+		{BIT_OR,"|"},{SPP,"++"},{SMM,"--"},
 	};
 	TokenMap	BasicToken{
 		{"+",new Token(PLUS)},{"-",new Token(MINUS)},{"*",new Token(MUL)},{"/",new Token(DIV)},{"=",new Token(ASSIGN)},
 		{"+=",new Token(SADD)},{"-=",new Token(SSUB)},{"*=",new Token(SMUL)},{"/=",new Token(SDIV)},
 		{"<",new Token(LT)},{"<=",new Token(LE)},{">",new Token(GT)},{">=",new Token(GE)},{"==",new Token(EQ)},
 		{"!=",new Token(NE)},{"!",new Token(NOT)},{"&&",new Token(AND)},{"||",new Token(OR)},{":",new Token(COLON)},
-		{",",new Token(COMMA)},{";",new Token(SEMI)},{".",new Token(DOT)},{"&",new Token(GET_ADD)},{"->",new Token(PTRVISIT)},
-		{"[",new Token(LSB)},{"]",new Token(RSB)},{"(",new Token(LPAREN)},{")",new Token(RPAREN)},
+		{",",new Token(COMMA)},{";",new Token(SEMI)},{".",new Token(DOT)},{"&",new Token(BIT_AND)},{"^",new Token(XOR)}, {"->",new Token(PTRVISIT)},
+		{"[",new Token(LSB)},{"]",new Token(RSB)},{"(",new Token(LPAREN)},{")",new Token(RPAREN)},{"<<",new Token(SL)},{">>",new Token(SR)},{"|",new Token(BIT_OR)},{"%",new Token(MOD)},
+		{"?",new Token(QUESTION)},{"++",new Token(SPP)},{"--",new Token(SMM)},{"%=",new Token(SMOD)}, {"&=",new Token(SAND)},{"|=",new Token(SOR)},
+		{"<<=",new Token(SSL)},{">>=",new Token(SSR)},{"^=",new Token(SXOR)},
 		{"{",new Token(BEGIN)},{"}",new Token(END)},{"printf",new Token(PRINT)},
 		{"typedef",new Token(TYPEDEF)},
 		{"const",new Token(CONST_LIM)},{"static",new Token(STATIC_LIM)},{"enum",new Token(ENUM)},{"union",new Token(UNION)},
 		{ "struct",new Token(STRUCT) },
-		{ "if",new Token(IF) },{ "else",new Token(ELSE) },{"sizeof",new Token(SIZEOF)},
-		{ "while",new Token(WHILE) },{ "break",new Token(BREAK) },{ "for",new Token(FOR) }, {"do",new Token(DO)},{"switch",new Token(SWITCH)}, {"case",new Token(CASE)},
+		{ "if",new Token(IF) },{"else",new Token(ELSE) },{"sizeof",new Token(SIZEOF)},
+		{ "while",new Token(WHILE) },{"break",new Token(BREAK) },{"for",new Token(FOR) },{"do",new Token(DO)},{"switch",new Token(SWITCH)}, {"case",new Token(CASE)},
 		{ "continue",new Token(CONTINUE) },{"default",new Token(DEFAULT)},
 		{ "return",new Token(RETURN) },
-		{ "true",new Token(TTRUE) },{ "false",new Token(TFALSE) },
-		{ "bool",new Token(BOOL_DECL) },{ "double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},{"short",new Token(SHORT_DECL)},
-		{ "int",new Token(INTEGER_DECL) },{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)},
+		{ "true",new Token(TTRUE) },{"false",new Token(TFALSE) },
+		{ "bool",new Token(BOOL_DECL) },{"double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},{"short",new Token(SHORT_DECL)},
+		{ "int",new Token(INTEGER_DECL) },{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)}
 	};
 	bool				is_function_args = false;
 
@@ -178,6 +182,7 @@ namespace hcc
 		token_stream.push_back(new Endl());
 		for (size_t i = 0; i < content.size(); i++)
 		{
+			std::string str = std::string(1, content[i]);
 			switch (content[i])
 			{
 			case '\'':
@@ -216,24 +221,36 @@ namespace hcc
 					i++;
 					break;
 				}
+				else if (i + 1 < content.size() && content[i + 1] == '=')
+				{
+					i++;
+					token_stream.push_back(BasicToken["&="]);
+				}
 				else
 					token_stream.push_back(BasicToken["&"]);
 				break;
 			case '|':
 				if (i + 1 < content.size() && content[i + 1] == '|')
 				{
-					token_stream.push_back(BasicToken["||"]);
-					i++;
+					str += content[++i]; token_stream.push_back(BasicToken[str]); break;
 				}
-				break;
 			case '+':
+				if (i + 1 < content.size() && content[i + 1] == '+')
+				{
+					str += content[++i]; token_stream.push_back(BasicToken[str]); break;
+				}
+			case '^':
 			case '>':
+				if (i + 1 < content.size() && content[i + 1] == '>')
+					str += content[++i];
 			case '<':
+				if (i + 1 < content.size() && content[i + 1] == '<')
+					str += content[++i];
 			case '=':
 			case '!':
+			case '%':
 			case '*':
 			{
-				std::string str = std::string(1, content[i]);
 				if (i + 1 < content.size() && content[i + 1] == '=')
 				{
 					str += content[++i];
@@ -241,6 +258,7 @@ namespace hcc
 				token_stream.push_back(BasicToken[str]);
 				break;
 			}
+			case '?':
 			case ';':
 			case ':':
 			case '.':
@@ -304,6 +322,12 @@ namespace hcc
 				else if (content[i + 1] == '>')
 				{
 					token_stream.push_back(BasicToken["->"]);
+					i++;
+					break;
+				}
+				else if (content[i + 1] == '-')
+				{
+					token_stream.push_back(BasicToken["--"]);
 					i++;
 					break;
 				}
