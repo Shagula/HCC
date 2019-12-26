@@ -8,6 +8,59 @@ using TokenMap = std::map<std::string, Token*>;
 using TagStrMap = std::map<Tag, std::string>;
 namespace hcc
 {
+	namespace num_process {
+		// the number of every bit, convert to dec. 
+		bool is_good_hex_bit(char ch) {
+			if (ch >= '0' && ch <= '9')
+				return true;
+			ch = tolower(ch);
+			if (ch > 'f' || ch < 'a')
+				return false;
+			return true;
+		}
+		int _hbit(char ch) {
+			if (ch >= '0' && ch <= '9')
+				return ch - '0';
+			ch = tolower(ch);
+			if (!is_good_hex_bit(ch))
+				throw LexerError("invalid hex number");
+			return 10 + ch - 'a';
+		}
+		// the number of every bit, convert to dec. 
+		int _obit(char ch) {
+			if (ch > '7' || ch < '0')
+				throw LexerError("invalid oct number");
+			return ch - '0';
+		}
+		Token* hex_to_dec(const std::string &str,size_t& pos) {
+			long long ret = 0;
+			for (; pos<str.size(); pos++) {
+				if (!is_good_hex_bit(str[pos]))
+					break;
+				ret *= 16;
+				ret += _hbit(str[pos]);
+			}
+			// int32
+			if (ret <= 2147483647)
+				return new Literal<int>((int)ret, Tag::INTEGER);
+			return new Literal<long long>(ret, Tag::LONG_INTEGER);
+		}
+		Token* oct_to_dec(const std::string& str, size_t &pos) {
+			long long ret = 0;
+			for (;pos<str.size(); pos++) {
+				if (str[pos] < '0' || str[pos]>'7')
+					break;
+				ret *= 8;
+				ret += _obit(str[pos]);
+			}
+			//int32
+			if (ret <= 2147483647)
+			{
+				return new Literal<int> ((int)ret, Tag::INTEGER);
+			}
+			return new Literal<long long>(ret, Tag::LONG_INTEGER);
+		}
+	}
 	//==========================================
 	size_t Endl::current_line = 0;
 
@@ -15,12 +68,14 @@ namespace hcc
 		{ STRUCT,"struct" },{PTRVISIT,"PTRVISIT"},{GOTO,"goto"},{CONST_LIM,"const"},{UNION,"union"},{ENUM,"enum"},
 		{STATIC_LIM,"static"},{UNSIGNED_LIM,"unsigned"},{SIGNED_LIM,"signed"},
 		{ COMMA,"COMMA" },{ COLON,"COLON" },
-		{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" },{ RETURN,"RETURN" },
+		{ ID,"ID" },{ INTEGER,"int value" },{LONG_INTEGER,"long value"},{UINTEGER,"uint value"},{ULONG_INTEGER,"ulong value"},
+		{ REAL,"double value" },{FLOAT,"float value"},{LONG_REAL,"long double value"}, { RETURN,"RETURN" },
 		{ IF,"IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{SWITCH,"SWITCH"},
 		{ INTEGER_DECL,"int" },{ DOUBLE_DECL,"double" },{ BOOL_DECL,"bool" },{ VOID_DECL,"void" },{CHAR_DECL,"CHAR_DECL"},{SHORT_DECL,"short"},
+		{FLOAT_DECL,"float"},
 		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
-		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ BIT_AND,"BIT_AND" },
+		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ BIT_AND,"BIT_AND" },{BIT_NOT,"~"},
 		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
 		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
 		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
@@ -34,7 +89,8 @@ namespace hcc
 		{"+=",new Token(SADD)},{"-=",new Token(SSUB)},{"*=",new Token(SMUL)},{"/=",new Token(SDIV)},
 		{"<",new Token(LT)},{"<=",new Token(LE)},{">",new Token(GT)},{">=",new Token(GE)},{"==",new Token(EQ)},
 		{"!=",new Token(NE)},{"!",new Token(NOT)},{"&&",new Token(AND)},{"||",new Token(OR)},{":",new Token(COLON)},
-		{",",new Token(COMMA)},{";",new Token(SEMI)},{".",new Token(DOT)},{"&",new Token(BIT_AND)},{"^",new Token(XOR)}, {"->",new Token(PTRVISIT)},
+		{",",new Token(COMMA)},{";",new Token(SEMI)},{".",new Token(DOT)},{"&",new Token(BIT_AND)},{"~",new Token(BIT_NOT)},
+		{"^",new Token(XOR)}, {"->",new Token(PTRVISIT)},
 		{"[",new Token(LSB)},{"]",new Token(RSB)},{"(",new Token(LPAREN)},{")",new Token(RPAREN)},{"<<",new Token(SL)},{">>",new Token(SR)},{"|",new Token(BIT_OR)},{"%",new Token(MOD)},
 		{"?",new Token(QUESTION)},{"++",new Token(SPP)},{"--",new Token(SMM)},{"%=",new Token(SMOD)}, {"&=",new Token(SAND)},{"|=",new Token(SOR)},
 		{"<<=",new Token(SSL)},{">>=",new Token(SSR)},{"^=",new Token(SXOR)},
@@ -84,6 +140,15 @@ namespace hcc
 	Token* parse_number(const std::string& str, size_t& pos)
 	{
 		int ret = 0;
+		// hex or oct number.
+		if (pos<str.size()&&str[pos] == '0')
+		{
+			pos++;
+			if (pos < str.size() && tolower(str[pos]) == 'x')
+				return num_process::hex_to_dec(str, ++pos);
+			return num_process::oct_to_dec(str, pos);
+		}
+		// integer part
 		for (; pos < str.size(); pos++)
 		{
 			if (isdigit(str[pos]))
@@ -109,7 +174,7 @@ namespace hcc
 				}
 				else
 				{
-					return new Real((double)ret + tmp);
+					return new Double((double)ret + tmp);
 				}
 			}
 		}
@@ -183,7 +248,8 @@ namespace hcc
 		for (size_t i = 0; i < content.size(); i++)
 		{
 			std::string str = std::string(1, content[i]);
-			switch (content[i])
+			char cur_char = content[i];
+			switch (cur_char)
 			{
 			case '\'':
 				token_stream.push_back(parse_char(content, i));
@@ -211,53 +277,6 @@ namespace hcc
 
 				token_stream.push_back(BasicToken["}"]);
 				break;
-			case ',':
-				token_stream.push_back(BasicToken[","]);
-				break;
-			case '&':
-				if (i + 1 < content.size() && content[i + 1] == '&')
-				{
-					token_stream.push_back(BasicToken["&&"]);
-					i++;
-					break;
-				}
-				else if (i + 1 < content.size() && content[i + 1] == '=')
-				{
-					i++;
-					token_stream.push_back(BasicToken["&="]);
-				}
-				else
-					token_stream.push_back(BasicToken["&"]);
-				break;
-			case '|':
-				if (i + 1 < content.size() && content[i + 1] == '|')
-				{
-					str += content[++i]; token_stream.push_back(BasicToken[str]); break;
-				}
-			case '+':
-				if (i + 1 < content.size() && content[i + 1] == '+')
-				{
-					str += content[++i]; token_stream.push_back(BasicToken[str]); break;
-				}
-			case '^':
-			case '>':
-				if (i + 1 < content.size() && content[i + 1] == '>')
-					str += content[++i];
-			case '<':
-				if (i + 1 < content.size() && content[i + 1] == '<')
-					str += content[++i];
-			case '=':
-			case '!':
-			case '%':
-			case '*':
-			{
-				if (i + 1 < content.size() && content[i + 1] == '=')
-				{
-					str += content[++i];
-				}
-				token_stream.push_back(BasicToken[str]);
-				break;
-			}
 			case '?':
 			case ';':
 			case ':':
@@ -265,7 +284,61 @@ namespace hcc
 			case '[':
 			case ']':
 			case ')':
+			case '~':
+			case ',':
 				token_stream.push_back(BasicToken[std::string(1, content[i])]);
+				break;
+
+			/*		
+					|	||	|=
+					&	&&	&=
+					+	++	+=
+					-	--	-= 	->
+					so the four character shared the same code
+			*/
+			case '|':
+			case '-':
+			case '+':
+			case '&':
+				if (i + 1 < content.size() && content[i + 1] == cur_char)
+				{
+					token_stream.push_back(BasicToken[std::string(2,cur_char)]);
+					i++;
+					break;
+				}
+				else if (i + 1 < content.size() && content[i + 1] == '=')
+				{
+					i++;
+					token_stream.push_back(BasicToken[std::string{ cur_char,'=' }]);
+				}
+				//->
+				else if(cur_char=='-'&& i + 1 < content.size() && content[i + 1] == '>')
+				{
+					i++; token_stream.push_back(BasicToken[std::string{ cur_char,'>' }]);
+				}
+				else
+					token_stream.push_back(BasicToken[std::string(1,cur_char)]);
+				break;
+			case '=':
+			case '*':
+			case '!':
+			case '%':
+			case '^':
+				if (i + 1 < content.size() && content[i + 1] == '=')
+				{
+					i++;
+					token_stream.push_back(BasicToken[std::string{ cur_char,'=' }]);
+				}
+				else
+					token_stream.push_back(BasicToken[std::string(1, cur_char)]);
+				break;
+			case '<':
+			case '>':
+				if (i + 1 < content.size() && content[i + 1] == cur_char)
+					str += content[++i];
+				if (i + 1 < content.size() && content[i + 1] == '=')
+					str += content[++i];
+				token_stream.push_back(BasicToken[str]);
 				break;
 			case '\t':
 			case ' ':
@@ -310,28 +383,6 @@ namespace hcc
 					break;
 				}
 				token_stream.push_back(BasicToken["/"]);
-				break;
-
-			case '-':
-				if (i + 1 < content.size() && content[i + 1] == '=')
-				{
-					token_stream.push_back(BasicToken["-="]);
-					i++;
-					break;
-				}
-				else if (content[i + 1] == '>')
-				{
-					token_stream.push_back(BasicToken["->"]);
-					i++;
-					break;
-				}
-				else if (content[i + 1] == '-')
-				{
-					token_stream.push_back(BasicToken["--"]);
-					i++;
-					break;
-				}
-				token_stream.push_back(BasicToken["-"]);
 				break;
 			case '0':case '1':case '2':case '3':case '4':case '5':case '6':
 			case '7':case '8':case '9':

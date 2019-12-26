@@ -42,23 +42,25 @@ namespace hcc
 		EQ, NE, GT, GE, LT, LE,
 		PLUS, MINUS, MUL, DIV,
 		EXTERN,
-		STRUCT,ENUM,UNION,
+		STRUCT,ENUM,UNION, ID,
 		PRINT, CAST,
 		BIT_AND,PTRVISIT,
 		CONST_LIM,STATIC_LIM,SIGNED_LIM,UNSIGNED_LIM,
-		VOID_DECL, INTEGER_DECL, DOUBLE_DECL,FLOAT_DECL,BOOL_DECL,CHAR_DECL, SHORT_DECL,
+		VOID_DECL, INTEGER_DECL,FLOAT_DECL,DOUBLE_DECL,BOOL_DECL,CHAR_DECL, SHORT_DECL,
 		RETURN,
 		IF, ELSE, DO,WHILE, FOR, BREAK, CONTINUE,SWITCH,CASE,
 		DEFAULT,SIZEOF,
-		NOT, AND, OR,XOR, BIT_OR,
+		NOT, AND, OR,XOR, BIT_OR, BIT_NOT,
 		BEGIN, END, SEMI, DOT, COMMA,
-		ID, INTEGER, REAL,CHAR_LIT, COLON,
+		INTEGER,UINTEGER,LONG_INTEGER,ULONG_INTEGER,
+		LONG_REAL,FLOAT, REAL,  CHAR_LIT, STRING,
+		COLON,
 		GOTO,
 		TTRUE, TFALSE,
 		LPAREN, RPAREN,LSB,RSB,
 		ENDOF, ENDL,
-		STRING,
-		TYPEDEF,SL,SR,BIT_NOT,MOD,QUESTION,
+
+		TYPEDEF,SL,SR,MOD,QUESTION,
 	};
 	extern std::map<Tag, std::string> TagStr;
 	class Token
@@ -74,7 +76,7 @@ namespace hcc
 			return "<" + TagStr[token_type] + ">";
 		}
 		virtual ~Token() {}
-	private:
+	protected:
 		Tag token_type;
 	};
 	extern std::map<std::string, Token*>BasicToken;
@@ -130,6 +132,20 @@ namespace hcc
 	private:
 		std::string id_name;
 	};
+	template <typename T>
+	class Literal :public Token {
+	public:
+		Literal(T v, Tag t) :Token(t), value(v) {}
+		static T get_value(Token* tok) {
+			if (tok->check(token_type))
+				 throw  Error("type-convert failed");
+		}
+		std::string to_string()const override {
+			return "<"+std::to_string(value) + ">";
+		}
+	private:
+		T value;
+	};
 	class Integer :public Token
 	{
 	public:
@@ -147,19 +163,19 @@ namespace hcc
 	private:
 		int value;
 	};
-	class Real :public Token
+	class Double :public Token
 	{
 	public:
-		Real(double d) :Token(REAL), value(d) {}
+		Double(double d) :Token(REAL), value(d) {}
 		static double get_value(Token *tok)
 		{
 			if(tok->get_tag()!=REAL)
-				throw  Error("type-convert failed(Token can't convert to Real).");
-			return static_cast<Real*>(tok)->value;
+				throw  Error("type-convert failed(Token can't convert to Double).");
+			return static_cast<Double*>(tok)->value;
 		}
 		std::string to_string()const override
 		{
-			return "<Real:" + std::to_string(value) + ">";
+			return "<Double:" + std::to_string(value) + ">";
 		}
 	private:
 		double value;
