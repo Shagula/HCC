@@ -32,6 +32,29 @@ namespace hcc
 				throw LexerError("invalid oct number");
 			return ch - '0';
 		}
+		Token* integer_to_token(unsigned long long num, const std::string &str, size_t &pos) {
+			// suffix count u is unsigned such 112U. For example 1234LLU, l_count is 2, u_count is 1.
+			int u_count = 0;
+			int l_count = 0;
+
+			while (tolower(str[pos]) == 'u' || tolower(str[pos]) == 'l') {
+				u_count += (tolower(str[pos]) == 'u');
+				l_count += tolower(str[pos]) == 'l';
+				pos++;
+			}
+			// hcc don't distinguish long and long long, long -> 64 bit and long long is also 64 bit.
+			if (u_count > 1 | l_count > 2) { throw LexerError("invalid integer"); }
+			if (u_count) {
+				if (l_count) {
+					return new Literal<unsigned long long>(num, Tag::ULONG_INTEGER);
+				}
+				return new Literal<unsigned int>(num, Tag::UINTEGER);
+			}
+			if (l_count) {
+				return new Literal<long long>(num, Tag::LONG_INTEGER);
+			}
+			return new Literal<int>(num, Tag::INTEGER);
+		}
 		Token* hex_to_dec(const std::string &str,size_t& pos) {
 			long long ret = 0;
 			for (; pos<str.size(); pos++) {
@@ -54,6 +77,8 @@ namespace hcc
 				ret += _obit(str[pos]);
 			}
 			//int32
+			if (ret == 0)
+				return integer_to_token(ret, str, pos);
 			if (ret <= 2147483647)
 			{
 				return new Literal<int> ((int)ret, Tag::INTEGER);
@@ -80,8 +105,8 @@ namespace hcc
 		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
 		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
 		{ ENDL,"ENDL" },{ PRINT,"PRINT" },{ CAST,"CAST" },
-		{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{SIZEOF,"SIZEOF"},
-		{SXOR,"%="},{SL,"<<"},{SR,">>"},{SSL,"<<="},{SSR,">>="},{SOR,"|="},{SMOD,"%="},{MOD,"%"},{SAND,"&="},
+		{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{SIZEOF,"SIZEOF"},{XOR,"^"},
+		{SXOR,"^="},{SL,"<<"},{SR,">>"},{SSL,"SLeftShift"},{SSR,"SRightShift"},{SOR,"|="},{SMOD,"%="},{MOD,"%"},{SAND,"&="},
 		{BIT_OR,"|"},{SPP,"++"},{SMM,"--"},
 	};
 	TokenMap	BasicToken{
@@ -139,7 +164,7 @@ namespace hcc
 
 	Token* parse_number(const std::string& str, size_t& pos)
 	{
-		int ret = 0;
+		unsigned long long ret = 0;
 		// hex or oct number.
 		if (pos<str.size()&&str[pos] == '0')
 		{
@@ -172,13 +197,22 @@ namespace hcc
 					tmp2 /= 10;
 					tmp = tmp + tmp2 * (str[pos] - (size_t)48);
 				}
-				else
+				else if (tolower(str[pos]) == 'l')
 				{
-					return new Double((double)ret + tmp);
+					pos++;	
+					return new Literal<double>((double)ret + tmp, Tag::LONG_REAL);
 				}
+				else if (tolower(str[pos]) == 'f')
+				{
+					pos++;	
+					return new Literal<double>((double)ret + tmp, Tag::FLOAT);
+				}
+				else
+					return new Literal<double>((double)ret + tmp,Tag::REAL);
 			}
+			throw LexerError("invaild real number");
 		}
-		return new Integer(ret);
+		return num_process::integer_to_token(ret, str, pos);
 	}
 
 	Token* parse_word(const std::string& str, size_t& pos)

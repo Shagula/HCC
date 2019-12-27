@@ -23,5 +23,6 @@ int main() {
 	catch (hcc::Error & e) {
 		std::cout << e.what();
 	}
+	while(true)std::cin.get();
 	return 0;
 }
