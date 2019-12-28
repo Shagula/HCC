@@ -1,0 +1,8 @@
+const int => cint
+const int* => pcint
+int const *=>pcint
+int const ptr
+long long=>longlong
+static int =>sint
+static const int a=34;
+const char *const * const 

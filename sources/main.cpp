@@ -13,7 +13,7 @@ std::string get_file_content(const std::string& filename)
 	std::string file_content((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
 	return file_content;
 }
-int main() {
+void run_hcc() {
 	try {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
@@ -23,6 +23,14 @@ int main() {
 	catch (hcc::Error & e) {
 		std::cout << e.what();
 	}
+}
+int main() {
+	double a2= 1.2e4;
+	const char const * cstr = "HELLO";
+	const char const const const *const b = cstr;
+	const char *const * const a = &b;
+	std::cout << *a;
+
 	while(true)std::cin.get();
 	return 0;
 }

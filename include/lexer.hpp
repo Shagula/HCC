@@ -146,40 +146,6 @@ namespace hcc
 	private:
 		T value;
 	};
-	class Integer :public Token
-	{
-	public:
-		Integer(int n) :Token(INTEGER), 
-			value(n) {}
-		static int get_value(Token *tok)
-		{
-			if (tok->check(INTEGER))
-				return static_cast<Integer*>(tok)->value;
-			throw  Error("type-convert failed(Token can't convert to Integer).");
-		}
-		std::string to_string()const override {
-			return "<Integer:" + std::to_string(value) + ">";
-		}
-	private:
-		int value;
-	};
-	class Double :public Token
-	{
-	public:
-		Double(double d) :Token(REAL), value(d) {}
-		static double get_value(Token *tok)
-		{
-			if(tok->get_tag()!=REAL)
-				throw  Error("type-convert failed(Token can't convert to Double).");
-			return static_cast<Double*>(tok)->value;
-		}
-		std::string to_string()const override
-		{
-			return "<Double:" + std::to_string(value) + ">";
-		}
-	private:
-		double value;
-	};
 	class TokenStream
 	{
 	public:

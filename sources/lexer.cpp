@@ -43,7 +43,7 @@ namespace hcc
 				pos++;
 			}
 			// hcc don't distinguish long and long long, long -> 64 bit and long long is also 64 bit.
-			if (u_count > 1 | l_count > 2) { throw LexerError("invalid integer"); }
+			if (u_count > 1 || l_count > 2) { throw LexerError("invalid integer"); }
 			if (u_count) {
 				if (l_count) {
 					return new Literal<unsigned long long>(num, Tag::ULONG_INTEGER);
