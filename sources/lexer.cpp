@@ -96,7 +96,7 @@ namespace hcc
 		{ ID,"ID" },{ INTEGER,"int value" },{LONG_INTEGER,"long value"},{UINTEGER,"uint value"},{ULONG_INTEGER,"ulong value"},
 		{ REAL,"double value" },{FLOAT,"float value"},{LONG_REAL,"long double value"}, { RETURN,"RETURN" },
 		{ IF,"IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{SWITCH,"SWITCH"},
-		{ INTEGER_DECL,"int" },{ DOUBLE_DECL,"double" },{ BOOL_DECL,"bool" },{ VOID_DECL,"void" },{CHAR_DECL,"CHAR_DECL"},{SHORT_DECL,"short"},
+		{ INTEGER_DECL,"int" },{ DOUBLE_DECL,"double" },{ BOOL_DECL,"bool" },{ VOID_DECL,"void" },{CHAR_DECL,"CHAR_DECL"},
 		{FLOAT_DECL,"float"},
 		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
@@ -109,6 +109,7 @@ namespace hcc
 		{SXOR,"^="},{SL,"<<"},{SR,">>"},{SSL,"SLeftShift"},{SSR,"SRightShift"},{SOR,"|="},{SMOD,"%="},{MOD,"%"},{SAND,"&="},
 		{BIT_OR,"|"},{SPP,"++"},{SMM,"--"},
 	};
+	Token __int_decl_tok(INTEGER_DECL);
 	TokenMap	BasicToken{
 		{"+",new Token(PLUS)},{"-",new Token(MINUS)},{"*",new Token(MUL)},{"/",new Token(DIV)},{"=",new Token(ASSIGN)},
 		{"+=",new Token(SADD)},{"-=",new Token(SSUB)},{"*=",new Token(SMUL)},{"/=",new Token(SDIV)},
@@ -129,7 +130,8 @@ namespace hcc
 		{ "return",new Token(RETURN) },
 		{ "true",new Token(TTRUE) },{"false",new Token(TFALSE) },
 		{ "bool",new Token(BOOL_DECL) },{"double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},{"short",new Token(SHORT_DECL)},
-		{ "int",new Token(INTEGER_DECL) },{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)}
+		{ "int",&__int_decl_tok },{"short",&__int_decl_tok},
+		,{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)}
 	};
 	bool				is_function_args = false;
 
