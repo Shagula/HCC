@@ -35,4 +35,5 @@ namespace hcc {
 		};
 
 	}
+	type::Type* process_type();
 }

@@ -4,16 +4,37 @@ namespace hcc {
 	class NonOp :public Node {
 	public:
 		NonOp() :Node(NodeType::NON_OP) {}
-		std::string emit_code()override { return ""; }
 	private:
 	};
 	class UnaryOp :public Node {
 	public:
 		UnaryOp(Token* t, Node* e):Node(NodeType::UNARY_OP),op(t), expr(e) {}
-		std::string emit_code()override;
+		void emit_code()override;
 
 	private:
 		Token* op;
 		Node* expr;
 	};
+	// BinOp receive two arguments , for instance: a+b, a is the left v, b is the right v
+	// '+' is op, BinOp generate gen or execute directly.
+	class BinOp :public Node {
+	public:
+		BinOp(Node* left_n, Token* t, Node* right_n);
+		void emit_code()override;
+		std::string to_string()override {
+			return var_name;
+		}
+	private:
+		std::string var_name;
+		Node* left_node;
+		Token* op;
+		Node* right_node;
+	};
+	namespace analyse_expr {
+		Node* create_expr();
+		Node* assign();
+		Node* expr();
+		Node* term();
+		Node* factor();
+	}
 }

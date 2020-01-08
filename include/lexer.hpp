@@ -46,7 +46,7 @@ namespace hcc
 		PRINT, CAST,
 		BIT_AND,PTRVISIT,
 		CONST_LIM,STATIC_LIM,SIGNED_LIM,UNSIGNED_LIM,
-		VOID_DECL, INTEGER_DECL,FLOAT_DECL,DOUBLE_DECL,BOOL_DECL,CHAR_DECL,
+		VOID_DECL, INTEGER_DECL,FLOAT_DECL,DOUBLE_DECL,BOOL_DECL,CHAR_DECL,LONG_DECL,
 		RETURN,
 		IF, ELSE, DO,WHILE, FOR, BREAK, CONTINUE,SWITCH,CASE,
 		DEFAULT,SIZEOF,
@@ -280,4 +280,6 @@ namespace hcc
 	size_t get_line_no();
 	Token* parse_char(const std::string& str, size_t& pos);
 	std::string get_this_id_string_value();
+	std::string tag_to_sign(Tag t);
+	inline bool _is_assign(Tag t);
 }

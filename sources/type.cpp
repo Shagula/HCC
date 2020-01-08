@@ -1,4 +1,5 @@
 #include "../include/type.hpp"
+#include "../include/lexer.hpp"
 namespace hcc
 {
 	namespace type {
@@ -10,5 +11,34 @@ namespace hcc
 			{"bool",new BasicType("bool",sizeof(bool))},
 			{"void",new BasicType("void",0)}
 		};
+	}
+	type::Type* process_basic_type(Token* tok)
+	{
+		switch (tok->get_tag())
+		{
+		case hcc::INTEGER_DECL:
+			token_stream.next();
+			return type::basic_type_map["int"];
+		case hcc::FLOAT_DECL:
+			token_stream.next();
+			return type::basic_type_map["float"];
+		case hcc::DOUBLE_DECL:
+			token_stream.next();
+			return type::basic_type_map["double"];
+		case hcc::BOOL_DECL:
+			token_stream.next();
+			return type::basic_type_map["bool"];
+		case hcc::CHAR_DECL:
+			token_stream.next();
+			return type::basic_type_map["char"];
+		case hcc::LONG_DECL:
+			token_stream.next();
+			return type::basic_type_map["long"];
+		default:
+			throw Error("unkown type");
+		}
+	}
+	type::Type* process_type() {
+		return process_basic_type(token_stream.this_token());
 	}
 }

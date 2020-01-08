@@ -97,7 +97,7 @@ namespace hcc
 		{ REAL,"double value" },{FLOAT,"float value"},{LONG_REAL,"long double value"}, { RETURN,"RETURN" },
 		{ IF,"IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{SWITCH,"SWITCH"},
 		{ INTEGER_DECL,"int" },{ DOUBLE_DECL,"double" },{ BOOL_DECL,"bool" },{ VOID_DECL,"void" },{CHAR_DECL,"CHAR_DECL"},
-		{FLOAT_DECL,"float"},
+		{FLOAT_DECL,"float"},{LONG_DECL,"long"},
 		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
 		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ BIT_AND,"BIT_AND" },{BIT_NOT,"~"},
@@ -130,7 +130,7 @@ namespace hcc
 		{ "return",new Token(RETURN) },
 		{ "true",new Token(TTRUE) },{"false",new Token(TFALSE) },
 		{ "bool",new Token(BOOL_DECL) },{"double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},{"short",new Token(SHORT_DECL)},
-		{ "int",&__int_decl_tok },{"short",&__int_decl_tok},
+		{ "int",&__int_decl_tok },{"short",&__int_decl_tok},{"long",new Token(LONG_DECL),}
 		,{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)}
 	};
 	bool				is_function_args = false;
@@ -438,6 +438,46 @@ namespace hcc
 		auto ret = Id::get_value(token_stream.this_token());
 		token_stream.match(ID);
 		return ret;
+	}
+	std::string tag_to_sign(Tag t)
+	{
+		switch (t)
+		{
+		case ASSIGN:
+			return "=";
+		case SADD:
+			return "+=";
+		case SSUB:
+			return "-=";
+		case SMUL:
+			return "*=";
+		case SDIV:
+			return "/=";
+		case PLUS:
+			return "+";
+		case MINUS:
+			return "-";
+		case DIV:
+			return "/";
+		case MUL:
+			return "*";
+		default:
+			throw Error("unkown sign!");
+		}
+	}
+	bool _is_assign(Tag t)
+	{
+		switch (t)
+		{
+		case ASSIGN:
+		case SADD:
+		case SSUB:
+		case SMUL:
+		case SDIV:
+			return true;
+		default:
+			return false;
+		}
 	}
 	Token* TokenStream::next_token()
 	{
