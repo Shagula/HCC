@@ -107,7 +107,7 @@ namespace hcc
 		{ ENDL,"ENDL" },{ PRINT,"PRINT" },{ CAST,"CAST" },
 		{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{SIZEOF,"SIZEOF"},{XOR,"^"},
 		{SXOR,"^="},{SL,"<<"},{SR,">>"},{SSL,"SLeftShift"},{SSR,"SRightShift"},{SOR,"|="},{SMOD,"%="},{MOD,"%"},{SAND,"&="},
-		{BIT_OR,"|"},{SPP,"++"},{SMM,"--"},
+		{BIT_OR,"|"},{SPP,"++"},{SMM,"--"}
 	};
 	Token __int_decl_tok(INTEGER_DECL);
 	TokenMap	BasicToken{
@@ -129,8 +129,8 @@ namespace hcc
 		{ "continue",new Token(CONTINUE) },{"default",new Token(DEFAULT)},
 		{ "return",new Token(RETURN) },
 		{ "true",new Token(TTRUE) },{"false",new Token(TFALSE) },
-		{ "bool",new Token(BOOL_DECL) },{"double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},{"short",new Token(SHORT_DECL)},
-		{ "int",&__int_decl_tok },{"short",&__int_decl_tok},{"long",new Token(LONG_DECL),}
+		{ "bool",new Token(BOOL_DECL) },{"double",new Token(DOUBLE_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},
+		{ "int",&__int_decl_tok },{"short",&__int_decl_tok},{"long",new Token(LONG_DECL)}
 		,{"extern",new Token(EXTERN)},{"float",new Token(FLOAT_DECL)}
 	};
 	bool				is_function_args = false;

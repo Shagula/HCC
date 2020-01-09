@@ -25,12 +25,6 @@ void run_hcc() {
 	}
 }
 int main() {
-	double a2= 1.2e4;
-	const char const * cstr = "HELLO";
-	const char const const const *const b = cstr;
-	const char *const * const a = &b;
-	std::cout << *a;
-
 	while(true)std::cin.get();
 	return 0;
 }

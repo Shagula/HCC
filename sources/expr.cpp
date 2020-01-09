@@ -1,5 +1,6 @@
 #include "../include/expr.hpp"
 #include "../include/info.hpp"
+#include "../include/literal.hpp"
 namespace hcc
 {
 	extern std::vector<std::string> instructions;
@@ -69,6 +70,25 @@ namespace hcc
 				result = new BinOp(result, tok, factor());
 			}
 			return result;
+		}
+		Node* factor() {
+			int s = 0;
+			std::map<Tag, int> tag_state_map{
+				{INTEGER,0},{UINTEGER,1},{LONG_INTEGER,2},
+				{ULONG_INTEGER,3},{UNSIGNED_CHAR_LIT,4},{CHAR_LIT,5},
+				{FLOAT,6},{REAL,7},{LONG_REAL,8}
+			};
+			if (token_stream.this_tag()==TTRUE||token_stream.this_tag()==TFALSE)
+			{
+				token_stream.next_token();
+				return new LiteralValue(std::to_string((int)(token_stream.this_tag() == TTRUE)), 0);
+			}
+			auto result = tag_state_map.find(token_stream.this_tag());
+			if (result == tag_state_map.end()) 
+				throw Error("unknown token!");
+			auto tok = token_stream.this_token();
+			token_stream.next_token();
+			//return new LiteralValue(static_cast<Literal*>(tok))
 		}
 	}
 }

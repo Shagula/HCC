@@ -139,6 +139,9 @@ namespace hcc
 			if (tok->check(token_type))
 				 throw  Error("type-convert failed");
 		}
+		std::string to_raw_string()const override {
+			return std::to_string(value);
+		}
 		std::string to_string()const override {
 			return "<"+std::to_string(value) + ">";
 		}
@@ -254,7 +257,7 @@ namespace hcc
 		{
 			return "<str:" + value + ">";
 		}
-	private:
+	//private:
 		std::string value;
 	};
 	class CharToken :public Token
