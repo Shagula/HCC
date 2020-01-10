@@ -25,7 +25,7 @@ namespace hcc {
 		virtual std::string debug() { return "<empty-node>"; }
 	private:
 		type::Type* type;
-		NodeType node_type;
+		NodeType node_type= NodeType::NON_OP;
 	};
 	std::string type_convert(type::Type* s, type::Type* dest, Node* n);
 }

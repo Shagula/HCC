@@ -139,11 +139,8 @@ namespace hcc
 			if (tok->check(token_type))
 				 throw  Error("type-convert failed");
 		}
-		std::string to_raw_string()const override {
-			return std::to_string(value);
-		}
 		std::string to_string()const override {
-			return "<"+std::to_string(value) + ">";
+			return std::to_string(value);
 		}
 	private:
 		T value;
@@ -284,5 +281,5 @@ namespace hcc
 	Token* parse_char(const std::string& str, size_t& pos);
 	std::string get_this_id_string_value();
 	std::string tag_to_sign(Tag t);
-	inline bool _is_assign(Tag t);
+	bool _is_assign(Tag t);
 }

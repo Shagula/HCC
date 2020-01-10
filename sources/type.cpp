@@ -4,11 +4,10 @@ namespace hcc
 {
 	namespace type {
 		std::map<std::string, Type*> basic_type_map{
-			{"int",new BasicType("int",sizeof(int))},{"unsigned int",new BasicType("unsigned int",sizeof(int))},
-			{"char",new BasicType("int",sizeof(char))},{"unsigned char",new BasicType("unsigned char",sizeof(char))},
-			{"long",new BasicType("long",sizeof(long long))},{"unsigned long",new BasicType("unsigned long",sizeof(long long))},
-			{"float",new BasicType("float",sizeof(float))},{"double",new BasicType("double",sizeof(double))},{"long double",new BasicType("long double",sizeof(long double))},
-			{"bool",new BasicType("bool",sizeof(bool))},
+			{"i32",new BasicType("int",sizeof(int))},{"u32",new BasicType("unsigned int",sizeof(int))},
+			{"i8",new BasicType("unsigned char",sizeof(char))},{"u8",new BasicType("unsigned char",sizeof(char))},
+			{"i64",new BasicType("long",sizeof(long long))},{"u64",new BasicType("unsigned long",sizeof(long long))},
+			{"float",new BasicType("float",sizeof(float))},{"double",new BasicType("ldouble",sizeof(double))},{"long double",new BasicType("long double",sizeof(long double))},
 			{"void",new BasicType("void",0)}
 		};
 	}

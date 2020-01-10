@@ -22,7 +22,7 @@ namespace hcc
 		std::string left_name = left_node->to_string();
 		// if left_node's type isn't match with expr type; convert it 
 		if (get_type() != right_node->get_type())
-			left_name = type_convert(right_node->get_type(), get_type(), right_node);
+			right_name = type_convert(right_node->get_type(), get_type(), right_node);
 		std::string sign = tag_to_sign(op->get_tag());
 		if (_is_assign(op->get_tag()))
 		{
@@ -30,7 +30,7 @@ namespace hcc
 			return;
 		}
 		var_name = get_tmp_var_name(false);
-		instructions.push_back(get_type()->to_string() + ' ' + var_name + "=" + left_name + sign + right_name);
+		instructions.push_back(get_type()->to_string() + ' ' + var_name + "=" + "("+sign+" "+left_name +" "+ right_name+")");
 	}	
 	namespace analyse_expr
 	{
@@ -73,6 +73,18 @@ namespace hcc
 		}
 		Node* factor() {
 			int s = 0;
+			switch (token_stream.this_tag())
+			{
+			case LPAREN:{
+				token_stream.match(LPAREN); 
+				auto ret = expr();
+				token_stream.match(RPAREN);
+				return ret;
+			}
+			default:
+				break;
+			}
+			// literal 
 			std::map<Tag, int> tag_state_map{
 				{INTEGER,0},{UINTEGER,1},{LONG_INTEGER,2},
 				{ULONG_INTEGER,3},{UNSIGNED_CHAR_LIT,4},{CHAR_LIT,5},
@@ -80,15 +92,15 @@ namespace hcc
 			};
 			if (token_stream.this_tag()==TTRUE||token_stream.this_tag()==TFALSE)
 			{
-				token_stream.next_token();
+				token_stream.next();
 				return new LiteralValue(std::to_string((int)(token_stream.this_tag() == TTRUE)), 0);
 			}
 			auto result = tag_state_map.find(token_stream.this_tag());
 			if (result == tag_state_map.end()) 
 				throw Error("unknown token!");
 			auto tok = token_stream.this_token();
-			token_stream.next_token();
-			//return new LiteralValue(static_cast<Literal*>(tok))
+			token_stream.next();
+			return new LiteralValue(tok->to_string(), result->second);
 		}
 	}
 }

@@ -1,5 +1,5 @@
-#include "node.hpp"
-#include "info.hpp"
+#include "../include/node.hpp"
+#include "../include/info.hpp"
 std::string hcc::type_convert(type::Type* s, type::Type* dest, Node* n)
 {
 	std::string name = get_tmp_var_name(false);

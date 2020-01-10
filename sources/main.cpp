@@ -1,6 +1,6 @@
-#include "../include/lexer.hpp"
 #include "../include/error.hpp"
-
+#include "../include/info.hpp"
+#include "../include/expr.hpp"
 #include <fstream>
 std::string get_file_content(const std::string& filename)
 {
@@ -18,13 +18,17 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		token_stream.print();
+		analyse_expr::create_expr()->emit_code();
+		for (auto a : instructions) {
+			std::cout << a << std::endl;
+		}
 	}
 	catch (hcc::Error & e) {
 		std::cout << e.what();
 	}
 }
 int main() {
+	run_hcc();
 	while(true)std::cin.get();
 	return 0;
 }
