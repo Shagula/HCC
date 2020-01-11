@@ -20,4 +20,9 @@ namespace hcc {
 	{
 		return "<Lexer Error:Line " + std::to_string(line_no) + " " + ems + ">";
 	}
+	std::string Error::what()
+	{
+		const std::string error_msg = "<line " + std::to_string(get_line_no()) + ">" + ems + " current_word:" + token_stream.this_token()->to_string();
+		return error_msg + "\n";
+	}
 }

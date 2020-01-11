@@ -1,6 +1,7 @@
 #include "../include/error.hpp"
 #include "../include/info.hpp"
-#include "../include/expr.hpp"
+#include "../include/parser.hpp"
+
 #include <fstream>
 std::string get_file_content(const std::string& filename)
 {
@@ -18,7 +19,11 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		analyse_expr::create_expr()->emit_code();
+		token_stream.print();
+		while (hcc::token_stream.this_tag() != hcc::ENDOF)
+		{
+			hcc::parse_statement::statement()->emit_code();
+		}
 		for (auto a : instructions) {
 			std::cout << a << std::endl;
 		}

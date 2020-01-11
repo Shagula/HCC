@@ -1,6 +1,7 @@
 #include "../include/expr.hpp"
 #include "../include/info.hpp"
 #include "../include/literal.hpp"
+#include "../include/variables.hpp"
 namespace hcc
 {
 	extern std::vector<std::string> instructions;
@@ -49,38 +50,40 @@ namespace hcc
 			}
 			return result;
 		}
-		Node* expr()
+		Node* expr(type::Type* ty)
 		{
-			Node* result = term();
+			Node* result = term(ty);
 			while (token_stream.this_tag() == PLUS || token_stream.this_tag() == MINUS)
 			{
 				Token* tok = token_stream.this_token();
 				token_stream.next();
-				result = new BinOp(result, tok, term());
+				result = new BinOp(result, tok, term(ty));
 			}
 			return result;
 		}
-		Node* term()
+		Node* term(type::Type* ty)
 		{
-			Node* result = factor();
+			Node* result = factor(ty);
 			while (token_stream.this_tag() == MUL || token_stream.this_tag() == DIV)
 			{
 				Token* tok = token_stream.this_token();
 				token_stream.next();
-				result = new BinOp(result, tok, factor());
+				result = new BinOp(result, tok, factor(ty));
 			}
 			return result;
 		}
-		Node* factor() {
+		Node* factor(type::Type* ty) {
 			int s = 0;
 			switch (token_stream.this_tag())
 			{
-			case LPAREN:{
-				token_stream.match(LPAREN); 
-				auto ret = expr();
+			case LPAREN: {
+				token_stream.match(LPAREN);
+				auto ret = expr(ty);
 				token_stream.match(RPAREN);
-				return ret;
+				return ret; 
 			}
+			case ID:
+				return parse_id(ty);
 			default:
 				break;
 			}

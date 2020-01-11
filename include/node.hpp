@@ -7,7 +7,7 @@
 #include "lexer.hpp"
 namespace hcc {
 	 enum class NodeType{
-		EXPR=1,VAR_DECL,
+		EXPR=1,LOCAL_VAR_DECL,GLO_VAR_DECL,
 		LITERAL,VAR,
 		NON_OP,UNARY_OP,BIN_OP
 	};

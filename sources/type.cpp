@@ -10,29 +10,28 @@ namespace hcc
 			{"float",new BasicType("float",sizeof(float))},{"double",new BasicType("ldouble",sizeof(double))},{"long double",new BasicType("long double",sizeof(long double))},
 			{"void",new BasicType("void",0)}
 		};
+		type::Type* void_type=basic_type_map["void"];
 	}
+
 	type::Type* process_basic_type(Token* tok)
 	{
 		switch (tok->get_tag())
 		{
 		case hcc::INTEGER_DECL:
 			token_stream.next();
-			return type::basic_type_map["int"];
+			return type::basic_type_map["i32"];
 		case hcc::FLOAT_DECL:
 			token_stream.next();
 			return type::basic_type_map["float"];
 		case hcc::DOUBLE_DECL:
 			token_stream.next();
 			return type::basic_type_map["double"];
-		case hcc::BOOL_DECL:
-			token_stream.next();
-			return type::basic_type_map["bool"];
 		case hcc::CHAR_DECL:
 			token_stream.next();
-			return type::basic_type_map["char"];
+			return type::basic_type_map["i8"];
 		case hcc::LONG_DECL:
 			token_stream.next();
-			return type::basic_type_map["long"];
+			return type::basic_type_map["i64"];
 		default:
 			throw Error("unkown type");
 		}

@@ -33,8 +33,8 @@ namespace hcc {
 	namespace analyse_expr {
 		Node* create_expr();
 		Node* assign();
-		Node* expr();
-		Node* term();
-		Node* factor();
+		Node* expr(type::Type* ty=type::void_type);
+		Node* term(type::Type* ty);
+		Node* factor(type::Type* ty);
 	}
 }

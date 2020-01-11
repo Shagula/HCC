@@ -7,6 +7,7 @@ namespace hcc {
 	namespace type {
 		class Type;
 		extern std::map<std::string, Type*> basic_type_map;
+		extern Type* void_type;
 		enum TypeTag {
 			BASIC=1,PTR,CONST_PTR,CONST,NONE,
 		};

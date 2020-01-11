@@ -6,11 +6,7 @@ namespace hcc {
 	{
 	public:
 		Error(const std::string& str) :ems(str) {}
-		virtual std::string what()
-		{
-			const std::string error_msg = "<line " + std::to_string(get_line_no()) + ">" + ems;
-			return error_msg + "\n";
-		}
+		virtual std::string what();
 	protected:
 		std::string ems;
 	};

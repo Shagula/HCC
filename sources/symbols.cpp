@@ -1,6 +1,9 @@
 #include "../include/symbols.hpp"
 #include "../include/lexer.hpp"
+#include "../include/type.hpp"
 namespace hcc {
+
+	SymbolTable _symbol_table;
 
 	void SymbolTable::type_check(Token* id, SymbolType e)
 	{
@@ -44,7 +47,7 @@ namespace hcc {
 		{
 			for (const auto& b : a)
 			{
-				std::cout << "ID:" << b.first << " TYPE:" << b.second->get_type->to_string() << std::endl;;
+				std::cout << "ID:" << b.first << " TYPE:" << b.second->get_type()->to_string() << std::endl;;
 			}
 			std::cout << "=================================\n";
 		}
