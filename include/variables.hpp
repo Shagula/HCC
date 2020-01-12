@@ -11,5 +11,5 @@ namespace hcc {
 	private:
 		std::string name;
 	};
-	Node* parse_id(type::Type* ty);
+	Node* parse_id();
 }

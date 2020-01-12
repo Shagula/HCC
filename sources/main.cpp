@@ -19,7 +19,7 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		token_stream.print();
+		//token_stream.print();
 		while (hcc::token_stream.this_tag() != hcc::ENDOF)
 		{
 			hcc::parse_statement::statement()->emit_code();

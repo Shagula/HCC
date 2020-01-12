@@ -19,7 +19,7 @@ namespace hcc {
 	// '+' is op, BinOp generate gen or execute directly.
 	class BinOp :public Node {
 	public:
-		BinOp(Node* left_n, Token* t, Node* right_n);
+		BinOp(Node* left_n, Token* t, Node* right_n,type::Type* ty=nullptr);
 		void emit_code()override;
 		std::string to_string()override {
 			return var_name;
@@ -33,6 +33,7 @@ namespace hcc {
 	namespace analyse_expr {
 		Node* create_expr();
 		Node* assign();
+		Node* compare(type::Type* ty=type::void_type);
 		Node* expr(type::Type* ty=type::void_type);
 		Node* term(type::Type* ty);
 		Node* factor(type::Type* ty);

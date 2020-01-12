@@ -5,12 +5,22 @@
 namespace hcc
 {
 	extern std::vector<std::string> instructions;
-	BinOp::BinOp(Node* left_n, Token* t, Node* right_n):Node(NodeType::BIN_OP),left_node(left_n),right_node(right_n),op(t)
+	bool literal_or_variable(NodeType nt)
 	{
-		set_type(left_n->get_type());
+		if (nt == NodeType::LITERAL || nt == NodeType::VAR)
+			return true;
+		return false;
+	}
+	BinOp::BinOp(Node* left_n, Token* t, Node* right_n,type::Type* ty):Node(NodeType::BIN_OP),left_node(left_n),right_node(right_n),op(t)
+	{
+		if (ty != nullptr)
+			set_type(ty);
+		else
+			set_type(left_n->get_type());
 		if (get_type() == nullptr) {
 			throw Error("type error!");
 		}
+
 	}
 	void BinOp::emit_code()
 	{
@@ -41,14 +51,35 @@ namespace hcc
 		}
 		Node* assign()
 		{
-			Node* result = expr();
+			Node* result = compare();
 			while (_is_assign(token_stream.this_tag()))
 			{
 				Token* tok = token_stream.this_token();
 				token_stream.next();
-				result = new BinOp(result, tok, expr());
+				result = new BinOp(result, tok, compare());
 			}
 			return result;
+		}
+		Node* compare(type::Type* ty)
+		{
+			Node* result = expr(ty);
+			while (1) {
+				auto tok = token_stream.this_token();
+				switch (tok->get_tag())
+				{
+				case EQ:
+				case NE:
+				case LT:
+				case LE:
+				case GE:
+				case GT:
+					token_stream.next();
+					result = new BinOp(result, tok, expr(), type::basic_type_map["int"]);
+					break;
+				default:
+					return result;
+				}			
+			}
 		}
 		Node* expr(type::Type* ty)
 		{
@@ -83,7 +114,7 @@ namespace hcc
 				return ret; 
 			}
 			case ID:
-				return parse_id(ty);
+				return parse_id();
 			default:
 				break;
 			}
@@ -95,12 +126,14 @@ namespace hcc
 			};
 			if (token_stream.this_tag()==TTRUE||token_stream.this_tag()==TFALSE)
 			{
+
+				std::string bool_to_int_str = std::to_string((int)(token_stream.this_tag() == TTRUE));
 				token_stream.next();
-				return new LiteralValue(std::to_string((int)(token_stream.this_tag() == TTRUE)), 0);
+				return new LiteralValue(bool_to_int_str, 0);
 			}
 			auto result = tag_state_map.find(token_stream.this_tag());
 			if (result == tag_state_map.end()) 
-				throw Error("unknown token!");
+				throw Error("unexpected token "+ token_stream.this_token()->to_string() );
 			auto tok = token_stream.this_token();
 			token_stream.next();
 			return new LiteralValue(tok->to_string(), result->second);

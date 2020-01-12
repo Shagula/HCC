@@ -22,7 +22,7 @@ namespace hcc {
 		token_stream.match(ID);
 		if (token_stream.this_tag() == ASSIGN) {
 			token_stream.match(ASSIGN);
-			expr = analyse_expr::expr();
+			expr = analyse_expr::create_expr();
 			return;
 		}
 		else if (token_stream.this_tag() == COMMA)
@@ -30,13 +30,12 @@ namespace hcc {
 		throw Error("invaild init expression!");
 	}
 
-	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type::Type* t) :Node(NodeType::LOCAL_VAR_DECL)
+	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type::Type* t) :Node(NodeType::LOCAL_VAR_DECL),units(vec)
 	{
 		set_type(t);
 		for (const auto& a : vec) {
 			_symbol_table.push(new VarRecorder(a->get_name_part(), t));
 		}
-		set_type(t);
 	}
 
 	void LocalVarDecl::emit_code()

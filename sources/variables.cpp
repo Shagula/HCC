@@ -6,7 +6,7 @@ namespace hcc
 	{
 		set_type(t);
 	}
-	Node* parse_id(type::Type* ty)
+	Node* parse_id()
 	{
 		std::string id_content = Id::get_value(token_stream.this_token());
 		token_stream.match(ID);
@@ -16,7 +16,7 @@ namespace hcc
 		switch (result->symbol_type)
 		{
 		case SymbolType::LOCAL_VAR:
-			return new Variable(id_content,ty);
+			return new Variable(id_content,result->get_type());
 		default:
 			break;
 		}
