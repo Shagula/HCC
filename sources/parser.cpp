@@ -61,7 +61,7 @@ namespace hcc {
 	}
 
 
-	namespace parse_statement {
+	namespace Parser {
 		Node* var_decl()
 		{
 			type::Type* type = hcc::process_type();

@@ -22,7 +22,7 @@ void run_hcc() {
 		//token_stream.print();
 		while (hcc::token_stream.this_tag() != hcc::ENDOF)
 		{
-			hcc::parse_statement::statement()->emit_code();
+			hcc::Parser::statement()->emit_code();
 		}
 		for (auto a : instructions) {
 			std::cout << a << std::endl;

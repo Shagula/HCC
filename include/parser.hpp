@@ -23,8 +23,12 @@ namespace hcc {
 	private:
 		std::vector<VarDeclUnit*> units;
 	};
-	namespace parse_statement {
+	namespace Parser {
 		Node* var_decl();
 		Node* statement();
+	}
+	namespace analyse_expr
+	{
+		Node* create_expr();
 	}
 }

@@ -6,3 +6,16 @@ long long=>longlong
 static int =>sint
 static const int a=34;
 const char *const * const 
+//===================
+if(a<b){
+	a++;
+}
+else
+{
+	b++;
+}
+bool %tn=a<b;
+if %tn true_tag
+add b
+goto end
+add
