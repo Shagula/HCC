@@ -4,7 +4,7 @@
 #include <vector>
 namespace hcc {
 	// in a var_decl , you may def many var in one sentance for instance
-// int a=3,b=4,c=3;
+	// int a=3,b=4,c=3;
 	class VarDeclUnit{
 	public:
 		VarDeclUnit(type::Type* t);

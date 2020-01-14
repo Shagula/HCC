@@ -19,10 +19,10 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		//token_stream.print();
-		while (hcc::token_stream.this_tag() != hcc::ENDOF)
-		{
-			hcc::Parser::statement()->emit_code();
+		hcc::Parser::statement();
+
+		for (auto a : abstruct_instruction_table) {
+			a->emit_code();
 		}
 		for (auto a : instructions) {
 			std::cout << a << std::endl;

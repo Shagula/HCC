@@ -2,7 +2,7 @@
 #include "../include/expr.hpp"
 #include "../include/symbols.hpp"
 namespace hcc {
-	extern std::vector<std::string> instructions;
+
 
 	bool _is_value_node(NodeType t)
 	{
@@ -62,6 +62,8 @@ namespace hcc {
 
 
 	namespace Parser {
+		void build_if();
+		void build_block();
 		Node* var_decl()
 		{
 			type::Type* type = hcc::process_type();
@@ -84,6 +86,12 @@ namespace hcc {
 			case FLOAT_DECL:
 			case DOUBLE_DECL:
 				return var_decl();
+			case BEGIN:
+				build_block();
+				return nullptr;
+			case IF:
+				build_if();
+				return nullptr;
 			default:
 			{
 				auto ret = analyse_expr::create_expr();

@@ -1,15 +1,18 @@
 #pragma once
 /*
-	AST Node 
+	AST Node
 
 */
 #include "type.hpp"
 #include "lexer.hpp"
 namespace hcc {
-	 enum class NodeType{
-		EXPR=1,LOCAL_VAR_DECL,GLO_VAR_DECL,
-		LITERAL,VAR,IF_TRUE_A_OR_B,
-		NON_OP,UNARY_OP,BIN_OP,
+	extern std::vector<std::string> instructions;
+	enum class NodeType {
+		BEGIN_BLOCK, END_BLOCK,
+		EXPR = 1, LOCAL_VAR_DECL, GLO_VAR_DECL,
+		LITERAL, VAR,
+		IF_FALSE_TO_A, IFAELSEB, JMP, JMP_TAG,
+		NON_OP, UNARY_OP, BIN_OP,
 		BLOCK,
 	};
 	class Node {
@@ -25,8 +28,15 @@ namespace hcc {
 		virtual std::string to_string() { return ""; }
 		virtual std::string debug() { return "<empty-node>"; }
 	private:
-		type::Type* type;
-		NodeType node_type= NodeType::NON_OP;
+		type::Type* type = nullptr;
+		NodeType node_type = NodeType::NON_OP;
 	};
 	std::string type_convert(type::Type* s, type::Type* dest, Node* n);
+	class FixedInstruction :public Node {
+	public:
+		FixedInstruction(NodeType nt, const std::string &_content) :Node(nt), content(_content) {}
+		void emit_code()override { instructions.push_back("(" + content + ")"); }
+	private:
+		std::string content;
+	};
 }

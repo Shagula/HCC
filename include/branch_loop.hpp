@@ -1,29 +1,43 @@
 #pragma once
 #include <iostream>
 #include "node.hpp"
+#include <deque>
 namespace hcc {
-	class Block :public Node {
+	class Jmp :public Node {
 	public:
-		Block(const std::vector<Node*> &b) :Node(NodeType::BLOCK), block_content(b) {}
+		Jmp(std::string _tag_name) :Node(NodeType::JMP), tag_name(_tag_name) {}
 		void emit_code()override;
 	private:
-		std::vector<Node*> block_content;
+		std::string tag_name;
 	};
-	class IfTrueToA:public Node
+
+	/*
+		goto dest
+		...
+		dest: t++;
+		// dest is a JmpTag
+	*/
+	class JmpTag :public Node {
+	public:
+		JmpTag(std::string _tag_name) :Node(NodeType::JMP_TAG),tag_name(_tag_name){}
+		void emit_code()override;
+	private:
+		std::string tag_name;
+	};
+	class IfFalseToA:public Node
 	{
 	public:
-		IfTrueToA(const std::string& ft, Node* _expr,Block* blo) :Node(NodeType::IF_TRUE_A_OR_B),condition(_expr),true_tag(ft) ,block(blo){}
+		IfFalseToA(const std::string& ft, Node* _expr) :Node(NodeType::IF_FALSE_TO_A), condition(_expr), false_tag(ft) {}
 		void emit_code()override;
 
 	private:
-		Block* block;
 		Node* condition;
 		std::string false_tag;
 	};
 	namespace Parser {
-		Block* build_block();
+		void build_block();
 		void build_do_while();
 		void build_while();
-		Node* build_if();
+		void build_if();
 	}
 }

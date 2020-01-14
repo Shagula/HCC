@@ -22,7 +22,7 @@ namespace hcc {
 	}
 	std::string Error::what()
 	{
-		const std::string error_msg = "<line " + std::to_string(get_line_no()) + ">" + ems + " current_word:" + token_stream.this_token()->to_string();
+		const std::string error_msg = "<line " + std::to_string(get_line_no()) + ">" + ems ;
 		return error_msg + "\n";
 	}
 }
