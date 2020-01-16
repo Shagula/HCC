@@ -41,7 +41,7 @@ namespace hcc {
 	void LocalVarDecl::emit_code()
 	{
 		std::string type_name = get_type()->to_string();
-		std::string ret;
+		std::string ret="(";
 		for (auto& a : units) {
 			std::string var_name = a->get_name_part();
 			a->expr->emit_code();
@@ -54,16 +54,17 @@ namespace hcc {
 				std::string tmp = a->expr->to_string();
 				if (a->expr->get_type() != get_type() && _is_value_node(a->expr->get_node_type()))
 					tmp = type_convert(a->expr->get_type(), get_type(), a->expr);
-				ret += "=" + tmp;
+				ret += " "+tmp+")";
 			}
 			instructions.push_back(ret);
 		}
 	}
 
-
+	extern std::vector<std::pair<std::string, std::string>> nearest_loop_tag;
 	namespace Parser {
 		void build_if();
 		void build_block();
+		void build_while();
 		Node* var_decl()
 		{
 			type::Type* type = hcc::process_type();
@@ -80,6 +81,14 @@ namespace hcc {
 		{
 			switch (token_stream.this_tag())
 			{
+			case BREAK:
+				token_stream.match(BREAK);
+				token_stream.match(SEMI);
+				return new Jmp(nearest_loop_tag.back().second);
+			case CONTINUE:
+				token_stream.match(CONTINUE);
+				token_stream.match(SEMI);
+				return new Jmp(nearest_loop_tag.back().first);
 			case INTEGER_DECL:
 			case CHAR_DECL:
 			case LONG_DECL:
@@ -91,6 +100,9 @@ namespace hcc {
 				return nullptr;
 			case IF:
 				build_if();
+				return nullptr;
+			case WHILE:
+				build_while();
 				return nullptr;
 			default:
 			{

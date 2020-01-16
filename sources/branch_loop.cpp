@@ -2,10 +2,11 @@
 #include "../include/info.hpp"
 #include "../include/parser.hpp"
 namespace hcc {
+	extern std::vector<std::pair<std::string, std::string>> nearest_loop_tag;
 	void IfFalseToA::emit_code()
 	{
 		condition->emit_code();
-		instructions.push_back("(iffalse " + condition->to_string() + " " + false_tag+")");
+		instructions.push_back("(iffalse " + condition->to_string() + " " + false_tag + ")");
 	}
 
 	std::string _gen_false_tag() {
@@ -13,8 +14,12 @@ namespace hcc {
 		//  The tag which has a dot in front is auto generated jmp tag in an effort to distinct the user defined from compiler auto generated.
 		return ".ft" + std::to_string(index++);
 	}
+	std::string _gen_default_tag() {
+		static int index = 0;
+		return ".dt"+std::to_string(index++);
+	}
 	/*
-		end_tag: 
+		end_tag:
 		when processing if-else we need to imply end_tag for instance;
 		if(a<b)
 			min= a;
@@ -44,7 +49,7 @@ namespace hcc {
 			abstruct_instruction_table.push_back(new FixedInstruction(NodeType::BEGIN_BLOCK, "begin"));
 			while (token_stream.this_tag() != END) {
 				auto cur_statement = statement();
-				if(cur_statement!=nullptr)
+				if (cur_statement != nullptr)
 					abstruct_instruction_table.push_back(cur_statement);
 			}
 			abstruct_instruction_table.push_back(new FixedInstruction(NodeType::END_BLOCK, "end"));
@@ -65,6 +70,31 @@ namespace hcc {
 		(tag .et)
 		..residual instructions...
 		*/
+		void build_while()
+		{
+			token_stream.match(WHILE);
+			token_stream.match(LPAREN);
+			auto condition= analyse_expr::create_expr();
+			token_stream.match(RPAREN);
+			std::string start_tag = _gen_default_tag();
+			std::string end_tag = _gen_end_tag();
+			
+			nearest_loop_tag.push_back({ start_tag,end_tag });
+			abstruct_instruction_table.push_back(new JmpTag(start_tag));
+			abstruct_instruction_table.push_back(new IfFalseToA(end_tag, condition));
+			if (token_stream.this_tag() == BEGIN)
+				build_block();
+			else
+			{
+
+				auto cur_statement = statement();
+				if (cur_statement != nullptr)
+					abstruct_instruction_table.push_back(cur_statement);
+			}
+			abstruct_instruction_table.push_back(new Jmp(start_tag));
+			abstruct_instruction_table.push_back(new JmpTag(end_tag));
+			nearest_loop_tag.pop_back();
+		}
 		void build_if()
 		{
 			// to store the tmp abstruct instructions and when the parsing finshed, add abstruct_inst to abstruct_instruction_table
@@ -79,7 +109,7 @@ namespace hcc {
 			else
 			{
 				auto cur_statement = statement();
-				if(cur_statement!=nullptr)
+				if (cur_statement != nullptr)
 					abstruct_instruction_table.push_back(cur_statement);
 			}
 			// attach end tag into abstruct_instruction_table
@@ -116,5 +146,3 @@ namespace hcc {
 	}
 
 }
-
-

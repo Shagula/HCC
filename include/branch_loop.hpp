@@ -3,13 +3,9 @@
 #include "node.hpp"
 #include <deque>
 namespace hcc {
-	class Jmp :public Node {
-	public:
-		Jmp(std::string _tag_name) :Node(NodeType::JMP), tag_name(_tag_name) {}
-		void emit_code()override;
-	private:
-		std::string tag_name;
-	};
+	// to store the tag of a loop first->start_tag second->end_tag
+	std::vector<std::pair<std::string,std::string>> nearest_loop_tag;
+
 
 	/*
 		goto dest
@@ -24,6 +20,7 @@ namespace hcc {
 	private:
 		std::string tag_name;
 	};
+
 	class IfFalseToA:public Node
 	{
 	public:
@@ -36,7 +33,6 @@ namespace hcc {
 	};
 	namespace Parser {
 		void build_block();
-		void build_do_while();
 		void build_while();
 		void build_if();
 	}

@@ -37,11 +37,11 @@ namespace hcc
 		std::string sign = tag_to_sign(op->get_tag());
 		if (_is_assign(op->get_tag()))
 		{
-			instructions.push_back(left_name + sign + right_name);
+			instructions.push_back("("+sign+" "+left_name + " " + right_name+")");
 			return;
 		}
 		var_name = get_tmp_var_name(false);
-		instructions.push_back(get_type()->to_string() + ' ' + var_name + "=" + "("+sign+" "+left_name +" "+ right_name+")");
+		instructions.push_back("("+get_type()->to_string() + ' ' + var_name + " " + "("+sign+" "+left_name +" "+ right_name+"))");
 	}	
 	namespace analyse_expr
 	{

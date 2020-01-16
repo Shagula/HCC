@@ -31,4 +31,11 @@ namespace hcc {
 	{
 		Node* create_expr();
 	}
+	class Jmp :public Node {
+	public:
+		Jmp(std::string _tag_name) :Node(NodeType::JMP), tag_name(_tag_name) {}
+		void emit_code()override;
+	private:
+		std::string tag_name;
+	};
 }
