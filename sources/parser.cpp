@@ -30,7 +30,29 @@ namespace hcc {
 		throw Error("invaild init expression!");
 	}
 
-	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type::Type* t) :Node(NodeType::LOCAL_VAR_DECL),units(vec)
+	void VarDeclUnit::emit_code()
+	{
+		std::string type_name = get_type()->to_string();
+		std::string ret = "(";
+
+		std::string var_name = get_name_part();
+		expr->emit_code();
+		ret += type_name + " %" + var_name;
+		if (expr->get_node_type() != NodeType::NON_OP) {
+			// if the expr is bin , try to assign a var type to it. we don't assign type to value_node, cause the different mechanism to 
+			// binop and value_node
+			if (expr->get_node_type() == NodeType::BIN_OP)
+				expr->set_type(get_type());
+			std::string tmp = expr->to_string();
+			if (expr->get_type() != get_type() && _is_value_node(expr->get_node_type()))
+				tmp = type_convert(expr->get_type(), get_type(), expr);
+			ret += " " + tmp + ")";
+
+			instructions.push_back(ret);
+		}
+	}
+
+	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type::Type* t) :Node(NodeType::LOCAL_VAR_DECL), units(vec)
 	{
 		set_type(t);
 		for (const auto& a : vec) {
@@ -40,23 +62,8 @@ namespace hcc {
 
 	void LocalVarDecl::emit_code()
 	{
-		std::string type_name = get_type()->to_string();
-		std::string ret="(";
-		for (auto& a : units) {
-			std::string var_name = a->get_name_part();
-			a->expr->emit_code();
-			ret += type_name + " %" + var_name;
-			if (a->expr->get_node_type() != NodeType::NON_OP) {
-				// if the expr is bin , try to assign a var type to it. we don't assign type to value_node, cause the different mechanism to 
-				// binop and value_node
-				if (a->expr->get_node_type() == NodeType::BIN_OP)
-					a->expr->set_type(get_type());
-				std::string tmp = a->expr->to_string();
-				if (a->expr->get_type() != get_type() && _is_value_node(a->expr->get_node_type()))
-					tmp = type_convert(a->expr->get_type(), get_type(), a->expr);
-				ret += " "+tmp+")";
-			}
-			instructions.push_back(ret);
+		for (auto a : units) {
+			a->emit_code();
 		}
 	}
 

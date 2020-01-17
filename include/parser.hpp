@@ -10,6 +10,7 @@ namespace hcc {
 		VarDeclUnit(type::Type* t);
 		type::Type* get_type() { return type; }
 		std::string get_name_part() { return name; }
+		void emit_code();
 		Node* expr;
 	private:
 		std::string name;
