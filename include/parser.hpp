@@ -5,7 +5,7 @@
 namespace hcc {
 	// in a var_decl , you may def many var in one sentance for instance
 	// int a=3,b=4,c=3;
-	class VarDeclUnit{
+	class VarDeclUnit {
 	public:
 		VarDeclUnit(type::Type* t);
 		type::Type* get_type() { return type; }
@@ -27,6 +27,7 @@ namespace hcc {
 	namespace Parser {
 		Node* var_decl();
 		Node* statement();
+		Node* return_statement();
 	}
 	namespace analyse_expr
 	{
@@ -38,5 +39,13 @@ namespace hcc {
 		void emit_code()override;
 	private:
 		std::string tag_name;
+	};
+	class Return :public Node {
+	public:
+		Return(Node* e,bool emp) :Node(NodeType::RETURN), expr(e),empty(emp) {}
+		void emit_code()override;
+	private:
+		bool empty;
+		Node *expr;
 	};
 }

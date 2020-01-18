@@ -21,7 +21,7 @@ void run_hcc() {
 		build_token_stream(file_content);
 		hcc::Parser::statement();
 
-		for (auto a : abstruct_instruction_table) {
+		for (auto a : abstract_instruction_table) {
 			a->emit_code();
 		}
 		for (auto a : instructions) {

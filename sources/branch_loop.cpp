@@ -46,13 +46,13 @@ namespace hcc {
 		void build_block()
 		{
 			token_stream.match(BEGIN);
-			abstruct_instruction_table.push_back(new FixedInstruction(NodeType::BEGIN_BLOCK, "begin"));
+			abstract_instruction_table.push_back(new FixedInstruction(NodeType::BEGIN_BLOCK, "begin"));
 			while (token_stream.this_tag() != END) {
 				auto cur_statement = statement();
 				if (cur_statement != nullptr)
-					abstruct_instruction_table.push_back(cur_statement);
+					abstract_instruction_table.push_back(cur_statement);
 			}
-			abstruct_instruction_table.push_back(new FixedInstruction(NodeType::END_BLOCK, "end"));
+			abstract_instruction_table.push_back(new FixedInstruction(NodeType::END_BLOCK, "end"));
 			token_stream.match(END);
 		}
 		/*
@@ -80,8 +80,8 @@ namespace hcc {
 			std::string end_tag = _gen_end_tag();
 			
 			nearest_loop_tag.push_back({ start_tag,end_tag });
-			abstruct_instruction_table.push_back(new JmpTag(start_tag));
-			abstruct_instruction_table.push_back(new IfFalseToA(end_tag, condition));
+			abstract_instruction_table.push_back(new JmpTag(start_tag));
+			abstract_instruction_table.push_back(new IfFalseToA(end_tag, condition));
 			if (token_stream.this_tag() == BEGIN)
 				build_block();
 			else
@@ -89,34 +89,34 @@ namespace hcc {
 
 				auto cur_statement = statement();
 				if (cur_statement != nullptr)
-					abstruct_instruction_table.push_back(cur_statement);
+					abstract_instruction_table.push_back(cur_statement);
 			}
-			abstruct_instruction_table.push_back(new Jmp(start_tag));
-			abstruct_instruction_table.push_back(new JmpTag(end_tag));
+			abstract_instruction_table.push_back(new Jmp(start_tag));
+			abstract_instruction_table.push_back(new JmpTag(end_tag));
 			nearest_loop_tag.pop_back();
 		}
 		void build_if()
 		{
-			// to store the tmp abstruct instructions and when the parsing finshed, add abstruct_inst to abstruct_instruction_table
+			// to store the tmp abstruct instructions and when the parsing finshed, add abstruct_inst to abstract_instruction_table
 			token_stream.match(IF);
 			token_stream.match(LPAREN);
 			auto condition = analyse_expr::create_expr();
 			token_stream.match(RPAREN);
 			std::string false_tag = _gen_false_tag();
-			abstruct_instruction_table.push_back(new IfFalseToA(false_tag, condition));
+			abstract_instruction_table.push_back(new IfFalseToA(false_tag, condition));
 			if (token_stream.this_tag() == BEGIN)
 				build_block();
 			else
 			{
 				auto cur_statement = statement();
 				if (cur_statement != nullptr)
-					abstruct_instruction_table.push_back(cur_statement);
+					abstract_instruction_table.push_back(cur_statement);
 			}
-			// attach end tag into abstruct_instruction_table
+			// attach end tag into abstract_instruction_table
 			if (token_stream.this_tag() == ELSE) {
 				std::string end_tag = _gen_end_tag();
-				abstruct_instruction_table.push_back(new Jmp(end_tag));
-				abstruct_instruction_table.push_back(new JmpTag(false_tag));
+				abstract_instruction_table.push_back(new Jmp(end_tag));
+				abstract_instruction_table.push_back(new JmpTag(false_tag));
 				token_stream.match(ELSE);
 				if (token_stream.this_tag() == BEGIN)
 					build_block();
@@ -124,12 +124,12 @@ namespace hcc {
 				{
 					auto cur_statement = statement();
 					if (cur_statement != nullptr)
-						abstruct_instruction_table.push_back(cur_statement);
+						abstract_instruction_table.push_back(cur_statement);
 				}
-				abstruct_instruction_table.push_back(new JmpTag(end_tag));
+				abstract_instruction_table.push_back(new JmpTag(end_tag));
 				return;
 			}
-			abstruct_instruction_table.push_back(new JmpTag(false_tag));
+			abstract_instruction_table.push_back(new JmpTag(false_tag));
 		}
 	}
 

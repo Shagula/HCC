@@ -1,7 +1,7 @@
 #include "../include/info.hpp"
 namespace hcc {
 	std::vector<std::string> instructions;
-	std::vector<Node*> abstruct_instruction_table;
+	std::vector<Node*> abstract_instruction_table;
 	std::string get_tmp_var_name(bool c)
 	{
 		static int index = 0;

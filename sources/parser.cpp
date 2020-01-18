@@ -3,7 +3,7 @@
 #include "../include/symbols.hpp"
 namespace hcc {
 
-
+	extern bool function_block;
 	bool _is_value_node(NodeType t)
 	{
 		switch (t)
@@ -88,6 +88,9 @@ namespace hcc {
 		{
 			switch (token_stream.this_tag())
 			{
+			case RETURN:
+				if (!function_block) { throw Error("return must exist in function defination!"); }
+				return return_statement();
 			case BREAK:
 				token_stream.match(BREAK);
 				token_stream.match(SEMI);
@@ -119,6 +122,28 @@ namespace hcc {
 			}
 			}
 		}
+		Node * return_statement()
+		{
+			token_stream.match(RETURN);
+
+			if (token_stream.this_tag() == SEMI)
+			{
+				token_stream.match(SEMI);
+				return new Return(nullptr, true);
+			}
+			auto expr = analyse_expr::create_expr();
+			token_stream.match(SEMI);
+			return new Return(expr, false);
+		}
+	}
+	void Return::emit_code()
+	{
+		if (empty) {
+			instructions.push_back("(eret)");
+			return;
+		}
+		expr->emit_code();
+		instructions.push_back("(ret " + expr->to_string() + ")");
 	}
 }
 
