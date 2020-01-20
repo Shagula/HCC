@@ -24,6 +24,14 @@ namespace hcc {
 	private:
 		FunctionInfo* func_info;
 	};
+	class FunctionCall :public Node {
+	public:
+		FunctionCall(FunctionInfo *_func, const std::vector<Node*> &_exprs);
+		void emit_code()override;
+	private:
+		std::vector<Node*> exprs;
+		FunctionInfo *func;
+	};
 	extern std::map<std::string, FunctionInfo*> function_map;
 	namespace Parser
 	{

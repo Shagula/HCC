@@ -1,7 +1,9 @@
 #include "../include/function.hpp"
 #include "../include/lexer.hpp"
+#include "../include/symbols.hpp"
 namespace hcc
 {
+	extern std::vector<std::string> instructions;
 	bool function_block = false;
 	std::map<std::string, FunctionInfo*> function_map;
 	extern std::vector<Node*> abstract_instruction_table;
@@ -21,6 +23,7 @@ namespace hcc
 				function_block = true;
 				build_block();
 				function_block = false;
+				_symbol_table.push(new Symbol(name, ty, SymbolType::FUNCTION_ID));
 			}
 		}
 		std::vector<std::pair<std::string, type::Type*>> parse_argument()
@@ -48,6 +51,25 @@ namespace hcc
 			// Yip 
 			tmp += a.first + "->" + a.second->to_string() + ",)"[a==func_info->argument.back()];
 		}
+	}
+	FunctionCall::FunctionCall(FunctionInfo * _func, const std::vector<Node*> &_exprs):Node(NodeType::FUNC_CALL),func(_func),exprs(_exprs)
+	{
+		set_type(func->get_type());
+		if (exprs.size() != func->argument.size())
+			throw Error("argument size error");
+		for (int i = 0; i < exprs.size(); i++) {
+			if (!exprs[i]->get_type()->convertible(func->argument[i].second))
+				throw Error("argument type not matched");
+		}
+	}
+	void FunctionCall::emit_code()
+	{
+		for (auto a : exprs)
+		{
+			a->emit_code();
+			instructions.push_back("(push " + a->to_string() + ")");
+		}
+		instructions.push_back("(call " + func->get_func_name()+")");
 	}
 }
 
