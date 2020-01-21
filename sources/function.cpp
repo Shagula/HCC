@@ -17,6 +17,7 @@ namespace hcc
 			token_stream.match(ID);
 			if (token_stream.this_tag() == LPAREN) {
 				FunctionInfo *func = new FunctionInfo(name,ty);
+				_symbol_table.new_block();
 				func->argument = parse_argument();
 				function_map.insert({ name,func });
 				abstract_instruction_table.push_back(new FunctionDef(func));
@@ -35,6 +36,7 @@ namespace hcc
 				std::string name = Id::get_value(token_stream.this_token());
 				token_stream.match(ID);
 				ret.push_back({ name,ty });
+				_symbol_table.push(new VarRecorder(name, ty));
 				if(token_stream.this_tag() != RPAREN){
 					token_stream.match(COMMA);
 				}
@@ -51,6 +53,8 @@ namespace hcc
 			// Yip 
 			tmp += a.first + "->" + a.second->to_string() + ",)"[a==func_info->argument.back()];
 		}
+		if (func_info->argument.empty())tmp += ")";
+		instructions.push_back(tmp);
 	}
 	FunctionCall::FunctionCall(FunctionInfo * _func, const std::vector<Node*> &_exprs):Node(NodeType::FUNC_CALL),func(_func),exprs(_exprs)
 	{

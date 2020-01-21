@@ -19,7 +19,7 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		hcc::Parser::statement();
+		hcc::Parser::build_program();
 
 		for (auto a : abstract_instruction_table) {
 			a->emit_code();

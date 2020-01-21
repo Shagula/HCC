@@ -25,6 +25,8 @@ namespace hcc {
 		std::vector<VarDeclUnit*> units;
 	};
 	namespace Parser {
+		void build_program();
+		void function_or_glo_var();
 		Node* var_decl();
 		Node* statement();
 		Node* return_statement();

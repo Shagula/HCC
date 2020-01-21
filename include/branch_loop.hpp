@@ -4,8 +4,8 @@
 #include <deque>
 namespace hcc {
 	// to store the tag of a loop first->start_tag second->end_tag
-	std::vector<std::pair<std::string,std::string>> nearest_loop_tag;
-
+	extern std::vector<std::pair<std::string,std::string>> nearest_loop_tag;
+	extern bool function_block;
 
 	/*
 		goto dest
@@ -32,6 +32,7 @@ namespace hcc {
 		std::string false_tag;
 	};
 	namespace Parser {
+
 		void build_block();
 		void build_while();
 		void build_if();

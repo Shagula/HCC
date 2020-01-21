@@ -72,6 +72,14 @@ namespace hcc {
 		void build_if();
 		void build_block();
 		void build_while();
+
+		void build_program()
+		{
+			while (token_stream.this_tag() != Tag::ENDOF) {
+				function_or_glo_var();
+			}
+		}
+
 		Node* var_decl()
 		{
 			type::Type* type = hcc::process_type();

@@ -37,13 +37,13 @@ namespace hcc
 		}
 	}
 	Node* parse_function_call(Symbol* symbol) {
-		auto func_info = function_map[symbol->get_name];
+		auto func_info = function_map[symbol->get_name()];
 		token_stream.match(LPAREN);
 		std::vector<Node*> exprs;
 		exprs.push_back(analyse_expr::create_expr());
 		while (token_stream.this_tag() != RPAREN) {
-			exprs.push_back(analyse_expr::create_expr());
 			token_stream.match(COMMA);
+			exprs.push_back(analyse_expr::create_expr());
 		}
 		token_stream.match(RPAREN);
 		return new FunctionCall(func_info, exprs);

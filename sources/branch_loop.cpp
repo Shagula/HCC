@@ -1,8 +1,9 @@
 #include "../include/branch_loop.hpp"
 #include "../include/info.hpp"
 #include "../include/parser.hpp"
+#include "../include/symbols.hpp"
 namespace hcc {
-	extern std::vector<std::pair<std::string, std::string>> nearest_loop_tag;
+	std::vector<std::pair<std::string, std::string>> nearest_loop_tag;
 	void IfFalseToA::emit_code()
 	{
 		condition->emit_code();
@@ -43,9 +44,13 @@ namespace hcc {
 
 	namespace Parser
 	{
+
 		void build_block()
 		{
 			token_stream.match(BEGIN);
+			// in function, the symbol table will start new block when parsing arguments
+			if (!function_block)
+				_symbol_table.new_block();
 			abstract_instruction_table.push_back(new FixedInstruction(NodeType::BEGIN_BLOCK, "begin"));
 			while (token_stream.this_tag() != END) {
 				auto cur_statement = statement();
@@ -54,6 +59,7 @@ namespace hcc {
 			}
 			abstract_instruction_table.push_back(new FixedInstruction(NodeType::END_BLOCK, "end"));
 			token_stream.match(END);
+			_symbol_table.end_block();
 		}
 		/*
 		if(a<b)
