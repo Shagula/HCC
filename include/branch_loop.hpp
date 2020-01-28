@@ -33,7 +33,7 @@ namespace hcc {
 	};
 	namespace Parser {
 
-		void build_block();
+		void build_block(bool fb=false);
 		void build_while();
 		void build_if();
 	}

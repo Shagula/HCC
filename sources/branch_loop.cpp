@@ -17,7 +17,7 @@ namespace hcc {
 	}
 	std::string _gen_default_tag() {
 		static int index = 0;
-		return ".dt"+std::to_string(index++);
+		return ".dt" + std::to_string(index++);
 	}
 	/*
 		end_tag:
@@ -45,11 +45,11 @@ namespace hcc {
 	namespace Parser
 	{
 
-		void build_block()
+		void build_block(bool function_block)
 		{
 			token_stream.match(BEGIN);
 			// in function, the symbol table will start new block when parsing arguments
-			if (!function_block)
+			if(!function_block)
 				_symbol_table.new_block();
 			abstract_instruction_table.push_back(new FixedInstruction(NodeType::BEGIN_BLOCK, "begin"));
 			while (token_stream.this_tag() != END) {
@@ -80,11 +80,11 @@ namespace hcc {
 		{
 			token_stream.match(WHILE);
 			token_stream.match(LPAREN);
-			auto condition= analyse_expr::create_expr();
+			auto condition = analyse_expr::create_expr();
 			token_stream.match(RPAREN);
 			std::string start_tag = _gen_default_tag();
 			std::string end_tag = _gen_end_tag();
-			
+
 			nearest_loop_tag.push_back({ start_tag,end_tag });
 			abstract_instruction_table.push_back(new JmpTag(start_tag));
 			abstract_instruction_table.push_back(new IfFalseToA(end_tag, condition));

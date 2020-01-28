@@ -70,7 +70,7 @@ namespace hcc {
 	extern std::vector<std::pair<std::string, std::string>> nearest_loop_tag;
 	namespace Parser {
 		void build_if();
-		void build_block();
+		void build_block(bool bf=false);
 		void build_while();
 
 		void build_program()

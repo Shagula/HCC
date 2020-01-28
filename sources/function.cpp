@@ -9,7 +9,7 @@ namespace hcc
 	extern std::vector<Node*> abstract_instruction_table;
 	namespace Parser
 	{
-		void build_block();
+		void build_block(bool fb=false);
 		void function_or_glo_var()
 		{
 			type::Type* ty = process_type();
@@ -22,7 +22,7 @@ namespace hcc
 				function_map.insert({ name,func });
 				abstract_instruction_table.push_back(new FunctionDef(func));
 				function_block = true;
-				build_block();
+				build_block(true);
 				function_block = false;
 				_symbol_table.push(new Symbol(name, ty, SymbolType::FUNCTION_ID));
 			}
