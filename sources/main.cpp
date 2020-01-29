@@ -1,7 +1,7 @@
 #include "../include/error.hpp"
 #include "../include/info.hpp"
 #include "../include/parser.hpp"
-
+#include "../interpreter/include/memory.hpp"
 #include <fstream>
 std::string get_file_content(const std::string& filename)
 {
@@ -32,8 +32,14 @@ void run_hcc() {
 		std::cout << e.what();
 	}
 }
+void test_memory() {
+	using namespace vm;
+	mem.push(123);
+	int p=mem.push(23.34);
+	std::cout << mem.extract<double>(p);
+}
 int main() {
-	run_hcc();
+	test_memory();
 	while(true)std::cin.get();
 	return 0;
 }
