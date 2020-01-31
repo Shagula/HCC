@@ -1,4 +1,5 @@
 #include "../include/info.hpp"
+#include "..\interpreter\include\info.hpp"
 namespace hcc {
 	std::vector<std::string> instructions;
 	std::vector<Node*> abstract_instruction_table;
@@ -13,3 +14,4 @@ namespace hcc {
 		return "%" + std::to_string(index++);
 	}
 }
+

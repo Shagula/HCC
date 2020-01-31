@@ -28,6 +28,7 @@ namespace hcc {
 	public:
 		FunctionCall(FunctionInfo *_func, const std::vector<Node*> &_exprs);
 		void emit_code()override;
+		std::string to_string()override;
 	private:
 		std::vector<Node*> exprs;
 		FunctionInfo *func;

@@ -22,11 +22,16 @@ namespace vm {
 			return pos - sizeof(_Ty);
 		}
 		void pop(int sz) { pos -= sz; }
+
+		void write_ins(const char * ins, int sz);
+		char *ins_block;
+		int get_pos() { return pos; }
+		int pc = 0;
 	private:
 		void realloc();
 		void check();
 		char *content;
-		int pos=0;
+		int pos = 0;
 		int capacity;
 	};
 	extern Memory mem;

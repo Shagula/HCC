@@ -75,6 +75,10 @@ namespace hcc
 		}
 		instructions.push_back("(call " + func->get_func_name()+")");
 	}
+	std::string FunctionCall::to_string()
+	{
+		return "#ret";
+	}
 }
 
 

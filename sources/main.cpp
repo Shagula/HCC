@@ -39,7 +39,7 @@ void test_memory() {
 	std::cout << mem.extract<double>(p);
 }
 int main() {
-	test_memory();
+	run_hcc();
 	while(true)std::cin.get();
 	return 0;
 }
