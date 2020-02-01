@@ -3,6 +3,7 @@
 #include "../include/parser.hpp"
 #include "../interpreter/include/memory.hpp"
 #include <fstream>
+// last update 2020 2-1 21:38, By Htto.
 std::string get_file_content(const std::string& filename)
 {
 	using namespace std;

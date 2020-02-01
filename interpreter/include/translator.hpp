@@ -3,21 +3,29 @@
 #include <map>
 #include <string>
 namespace vm {
+	using index_type = int;
+
 	enum InsTag:char {
 		// bin_op sub_ins op1,op2 
 		/*
-			sub_ins First Bit, 0-> i8
+			sub_ins First Bit, 
+					  0-> i8
 					  1-> i16
 					  2-> i32
 					  3-> i64
 					  4-> r32
 					  5-> r64
 					  6-> r128
+					  C2 need to support
+					  7-> u8
+					  8-> u16
+					  9-> u32
+					  A-> u64
 					Second Bit, 
-					0-> imm op imm
-					1-> add op add
-					2-> imm op add
-					3-> add op imm
+					0:00-> imm op imm
+					1:01-> imm op add
+					2:10-> add op imm
+					3:11-> add op add
 		*/
 		ADD=0x01,SUB,MUL,DIV,
 		EQ,NE,GT,GE,LE,LT,
@@ -57,8 +65,17 @@ namespace vm {
 	// to store the bin info of the imm or var add.
 	struct InsData {
 		InsData(char *i, int len) :info(i), length(len) {}
-		int length;
-		char *info;
+		template<typename Ty>
+		InsData(const Ty & data) {
+			length = sizeof(data);
+			info = new char[length];
+			for (int i = 0; i < length; i++)
+				info[i] = ((char*)(&data))[i];
+		}
+
+		void push(InsData);
+		int length=0;
+		char *info=nullptr;
 		~InsData() { delete[] info; }
 	};
 }
