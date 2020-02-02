@@ -5,10 +5,10 @@
 namespace vm {
 	using index_type = int;
 
-	enum InsTag:char {
+	enum InsTag :char {
 		// bin_op sub_ins op1,op2 
 		/*
-			sub_ins First Bit, 
+			sub_ins First Bit,
 					  0-> i8
 					  1-> i16
 					  2-> i32
@@ -21,21 +21,21 @@ namespace vm {
 					  8-> u16
 					  9-> u32
 					  A-> u64
-					Second Bit, 
+					Second Bit,
 					0:00-> imm op imm
 					1:01-> imm op add
 					2:10-> add op imm
 					3:11-> add op add
 		*/
-		ADD=0x01,SUB,MUL,DIV,
-		EQ,NE,GT,GE,LE,LT,
-		AND,OR,W8,W16,W32,W64,WR128,
+		ADD = 0x01, SUB, MUL, DIV,
+		EQ, NE, GT, GE, LE, LT,
+		AND, OR, W8, W16, W32, W64, WR128,
 		// sub_ins 
 		/*
 			0-> common
 			1-> Expr
 		*/
-		JMP,CALL
+		JMP, CALL
 	};
 
 	extern std::string ir_content;
@@ -44,16 +44,7 @@ namespace vm {
 	extern std::map<std::string, void(*)()> parsing_table;
 	extern std::string cur_instruction; // cur instruction name
 
-	
 	//======================================================
-	void match(char ch);
-
-
-	void parsing();
-	std::string extract_word();
-	
-	void parse_bin();
-
 	class Error {
 	public:
 		Error(const std::string &str) :err_msg(str), line(line_no) {}
@@ -74,8 +65,22 @@ namespace vm {
 		}
 
 		void push(InsData);
-		int length=0;
-		char *info=nullptr;
-		~InsData() { delete[] info; }
+		char *release() { return info; info = nullptr; }
+		int length = 0;
+		char *info = nullptr;
+		~InsData() {
+			if (info != nullptr)
+				delete[] info;
+		}
 	};
+	//======================================================
+	void match(char ch);
+
+
+	void parsing();
+	std::string extract_word();
+	std::pair<char, InsData> process_unit();
+	void parse_bin();
+
+
 }

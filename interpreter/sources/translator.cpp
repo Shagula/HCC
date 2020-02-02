@@ -1,4 +1,5 @@
 #include "../include/translator.hpp"
+#include "../include/instructions.hpp"
 #include <string>
 namespace vm
 {
@@ -40,13 +41,17 @@ namespace vm
 		const std::map<std::string, InsTag> si_table{
 			{ "+",ADD },{ "-",SUB },{ "*",MUL },{ "/",DIV }
 		};
-		char *instruction = new char[20];
 		InsTag tag = si_table.find(cur_instruction)->second;
 		// ins name
-		instruction[0] = tag;
 		// need to obtain type and mod(the type of the operators, imm or var)
-
-
+		auto op1 = process_unit();
+		int op1_is_var = (op1.first >> 4);
+		auto op2 = process_unit();
+		char dd = op2.first | (op1_is_var << 5);
+		op1.second.push(op2.second);
+		//auto ins = gen_bin_op(dd,tag);
+		// load instruction.
+		//glo_instructions.push_back({ins, op1.second.release()});
 	}
 
 	//======================instruction proccessor========================
