@@ -27,7 +27,7 @@ namespace vm {
 					2:10-> add op imm
 					3:11-> add op add
 		*/
-		ADD = 0x01, SUB, MUL, DIV,
+		SADD = 0x01, SSUB, SMUL, SDIV,
 		EQ, NE, GT, GE, LE, LT,
 		AND, OR, W8, W16, W32, W64, WR128,
 		// sub_ins 

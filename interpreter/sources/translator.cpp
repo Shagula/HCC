@@ -39,7 +39,7 @@ namespace vm
 	void parse_bin()
 	{
 		const std::map<std::string, InsTag> si_table{
-			{ "+",ADD },{ "-",SUB },{ "*",MUL },{ "/",DIV }
+			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{ "/=",SDIV }
 		};
 		InsTag tag = si_table.find(cur_instruction)->second;
 		// ins name

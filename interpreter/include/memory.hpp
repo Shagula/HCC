@@ -6,7 +6,7 @@ namespace vm {
 	public:
 		Memory(int sz= DEFAULT_MEM_SIZE);
 		template<typename _Ty>
-		_Ty extract(int p) {
+		_Ty& extract(int p) {
 			return *(_Ty*)(content + p);
 		}
 		template<typename _Ty>
@@ -25,6 +25,7 @@ namespace vm {
 
 		int get_pos() { return pos; }
 		int pc = 0;
+
 	private:
 		void realloc();
 		void check();
