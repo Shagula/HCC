@@ -46,12 +46,12 @@ std::string gen_code() {
 
 			int index = i;
 			index = index | 1 << 5;
-			index = index | op_tag_map[a.first] << 8;
+			index = index | (int)op_tag_map[a.first] << 8;
 
 			map_content += "{" + to_string(index) + "," + func_name + "_vi},";
 			cnt++;
 			if (cnt % 3 == 0) { map_content += "\n\t"; }
-			index = index | 1 << 6;
+			index = index | 1 << 4;
 			map_content += "{" + to_string(index) + "," + func_name + "_vv},";
 			cnt++;
 			if (cnt % 3 == 0) { map_content += "\n\t"; }

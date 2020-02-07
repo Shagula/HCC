@@ -13,7 +13,7 @@ namespace vm
 	int ir_index = 0;
 	int line_no = 1;
 	std::map<std::string, void(*)()> parsing_table{
-		{"+",parse_bin },{"-",parse_bin},{ "*",parse_bin },{ "/",parse_bin }
+		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin }
 	};
 	//=====================================parser========================
 	std::string cur_instruction; // cur instruction name
@@ -29,6 +29,7 @@ namespace vm
 		{
 			match('(');
 			std::string word = extract_word();
+			cur_instruction = word;
 			auto result = parsing_table.find(word);
 			if (result == parsing_table.end())
 				throw Error("invaild instruction: " + word);
@@ -47,11 +48,11 @@ namespace vm
 		auto op1 = process_unit();
 		int op1_is_var = (op1.first >> 4);
 		auto op2 = process_unit();
-		char dd = op2.first | (op1_is_var << 5);
+		char dd = op2.first | (op1_is_var << 5)|((op2.first>>4)<<4);
 		op1.second.push(op2.second);
-		//auto ins = gen_bin_op(dd,tag);
+		auto ins = gen_bin_op(dd,tag);
 		// load instruction.
-		//glo_instructions.push_back({ins, op1.second.release()});
+		glo_instructions.push_back({ins, op1.second.release()});
 	}
 
 	//======================instruction proccessor========================
@@ -59,7 +60,9 @@ namespace vm
 	{
 		std::string ret;
 		char cur_ch = ir_content[ir_index];
-		while (cur_ch != ' '&&cur_ch != ')'||cur_ch==':')
+		while(cur_ch==' ')
+			cur_ch = ir_content[++ir_index];
+		while (cur_ch != ' '&&cur_ch != ')'&&cur_ch!=':')
 		{
 			ret += cur_ch;
 			cur_ch = ir_content[++ir_index];
@@ -118,20 +121,17 @@ namespace vm
 		{
 			std::string var_name = unit.substr(1, unit.size() - 1);
 			type = find_type(var_name);
-			return { type,InsData(find_pos(var_name)) };
+			return { type|(1<<4),InsData(find_pos(var_name)) };
 		}
 		const std::map<std::string, char> type_table{ {"i8",0},{"i16",1},{"i32",2},
 		{"i64",3 }, { "r32",4 }, { "r64",5 }, { "r128",6 }};
 		auto type_info = type_table.find(unit);
 		if (type_info == type_table.end())
-			throw Error("unknown type!");
+			throw Error("unknown type "+unit+"!");
 		type = type_info->second;
 		// store the unit info( var or imm) in 5ed bit.
-		type = type | (1 << 4);
 		match(':');
 		unit = extract_word();
-		
-
 		switch (type) {
 		case 0:
 			return { type,InsData((int8_t)to_int(unit)) };
@@ -148,11 +148,16 @@ namespace vm
 		case 6:
 			return { type,InsData((long double)to_real(unit)) };
 		default:
-			throw Error("type error or the version is too slow to support the new type.");
+			throw vm::Error("type error or the version is too slow to support the new type.");
 		}
 
 	}
-	void InsData::push(InsData rhs)
+	InsData::InsData(InsData && ins)
+	{
+		info = ins.info;
+		ins.info = nullptr;
+	}
+	void InsData::push(InsData& rhs)
 	{
 		char *tmp = new char[length + rhs.length];
 		int i = 0;
@@ -163,8 +168,10 @@ namespace vm
 		for (int j = 0; j < rhs.length; j++) {
 			tmp[i + j] = rhs.info[j];
 		}
+		delete[] rhs.info;
 		delete[] info;
 		info = tmp;
+		rhs.info = nullptr;
 		length += rhs.length;
 	}
 }

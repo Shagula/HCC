@@ -48,7 +48,7 @@ namespace vm {
 	class Error {
 	public:
 		Error(const std::string &str) :err_msg(str), line(line_no) {}
-		std::string what() { return "<line:" + std::to_string(line) + ">" + err_msg; }
+		std::string what()const { return "<line:" + std::to_string(line) + ">" + err_msg; }
 	private:
 		std::string err_msg;
 		int line;
@@ -63,8 +63,9 @@ namespace vm {
 			for (int i = 0; i < length; i++)
 				info[i] = ((char*)(&data))[i];
 		}
-
-		void push(InsData);
+		InsData(const InsData &) = delete;
+		InsData(InsData &&ins);
+		void push(InsData&);
 		char *release() { return info; info = nullptr; }
 		int length = 0;
 		char *info = nullptr;
@@ -75,8 +76,6 @@ namespace vm {
 	};
 	//======================================================
 	void match(char ch);
-
-
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
