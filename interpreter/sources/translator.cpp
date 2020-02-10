@@ -1,19 +1,27 @@
 #include "../include/translator.hpp"
 #include "../include/instructions.hpp"
+#include "../include/word_table.hpp"
 #include <string>
 namespace vm
 {
-
 	//===============================externs=============================
+	namespace write_ins {
+		void write_8(char *ins);
+		void write_16(char * ins);
+		void write_32(char *ins);
+		void write_64(char *ins);
+	}
 	int find_type(const std::string &var_name);
 
 	index_type find_pos(const std::string &var_name);
 	//=============================== vars===============================
 	std::string ir_content;
+	int cur_pos = 0;
 	int ir_index = 0;
 	int line_no = 1;
 	std::map<std::string, void(*)()> parsing_table{
-		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin }
+		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },
+		{"int",parse_decl},{"char",parse_bin},{"long",parse_bin},{"float",parse_bin},{"double",parse_bin}
 	};
 	//=====================================parser========================
 	std::string cur_instruction; // cur instruction name
@@ -48,11 +56,58 @@ namespace vm
 		auto op1 = process_unit();
 		int op1_is_var = (op1.first >> 4);
 		auto op2 = process_unit();
-		char dd = op2.first | (op1_is_var << 5)|((op2.first>>4)<<4);
+		char dd = op2.first | (op1_is_var << 5) | ((op2.first >> 4) << 4);
 		op1.second.push(op2.second);
-		auto ins = gen_bin_op(dd,tag);
+		auto ins = gen_bin_op(dd, tag);
 		// load instruction.
-		glo_instructions.push_back({ins, op1.second.release()});
+		glo_instructions.push_back({ ins, op1.second.release() });
+	}
+
+	void parse_decl()
+	{
+
+		auto type_result = type_name_info_table.find(cur_instruction);
+		if (type_result == type_name_info_table.end())
+			throw Error("void vm::parse_decl() unknown type!");
+		std::string var_name = extract_word().substr(1);
+		int pos = cur_pos;
+		cur_pos += type_result->second.second / 8;
+		var_type_table.insert({ var_name, VarInfo(type_result->second.first, pos) });
+		std::string right_value_info = extract_word();
+		if (right_value_info[0] == '(')
+		{
+			parse_bin();
+			return;
+		}
+		char *ins = convert_imm_type(type_result->second.first);
+		int byte_count = type_result->second.second / 8;
+		switch (byte_count)
+		{
+		case 0:
+			glo_instructions.push_back({ write_ins::write_8,ins });
+			return;
+		case 1:
+			glo_instructions.push_back({ write_ins::write_16,ins });
+			return;
+		case 2:
+			glo_instructions.push_back({ write_ins::write_32,ins });
+			return;
+		case 3:
+			glo_instructions.push_back({ write_ins::write_64,ins });
+			return;
+		case 4:
+			glo_instructions.push_back({ write_ins::write_32,ins });
+			return;
+		case 5:
+			glo_instructions.push_back({ write_ins::write_64,ins });
+			return;
+		case 6:
+			glo_instructions.push_back({ write_ins::write_64,ins });
+			return;
+		default:
+			throw Error("intern_error E3");
+			break;
+		}
 	}
 
 	//======================instruction proccessor========================
@@ -60,9 +115,9 @@ namespace vm
 	{
 		std::string ret;
 		char cur_ch = ir_content[ir_index];
-		while(cur_ch==' ')
+		while (cur_ch == ' ')
 			cur_ch = ir_content[++ir_index];
-		while (cur_ch != ' '&&cur_ch != ')'&&cur_ch!=':')
+		while (cur_ch != ' '&&cur_ch != ')'&&cur_ch != ':')
 		{
 			ret += cur_ch;
 			cur_ch = ir_content[++ir_index];
@@ -72,7 +127,7 @@ namespace vm
 
 	int64_t to_int(std::string str) {
 		int64_t ret = 0;
-		for (int pos=0; pos < str.size(); pos++)
+		for (int pos = 0; pos < str.size(); pos++)
 		{
 			if (isdigit(str[pos]))
 			{
@@ -121,13 +176,12 @@ namespace vm
 		{
 			std::string var_name = unit.substr(1, unit.size() - 1);
 			type = find_type(var_name);
-			return { type|(1<<4),InsData(find_pos(var_name)) };
+			return { type | (1 << 4),InsData(find_pos(var_name)) };
 		}
-		const std::map<std::string, char> type_table{ {"i8",0},{"i16",1},{"i32",2},
-		{"i64",3 }, { "r32",4 }, { "r64",5 }, { "r128",6 }};
-		auto type_info = type_table.find(unit);
-		if (type_info == type_table.end())
-			throw Error("unknown type "+unit+"!");
+
+		auto type_info = stype_table.find(unit);
+		if (type_info == stype_table.end())
+			throw Error("unknown type " + unit + "!");
 		type = type_info->second;
 		// store the unit info( var or imm) in 5ed bit.
 		match(':');
@@ -151,6 +205,58 @@ namespace vm
 			throw vm::Error("type error or the version is too slow to support the new type.");
 		}
 
+	}
+	char * convert_imm_type(int target_type)
+	{
+		std::string type_name = extract_word();
+		auto type_result = stype_table.find(type_name);
+		if (type_result == stype_table.end())
+			throw Error("invalid type: " + type_name);
+		match(':');
+		int imm_type_idx = type_result->second;
+		if (imm_type_idx <= INTEGER_TIDX_MAX)
+		{
+			switch (target_type)
+			{
+			case 0:
+				return new char(to_int(extract_word()));
+			case 1:
+				return (char*)(new int16_t(to_int(extract_word())));
+			case 2:
+				return (char*)(new int32_t(to_int(extract_word())));
+			case 3:
+				return (char*)(new int64_t(to_int(extract_word())));
+			case 4:
+				return (char*)(new float(to_int(extract_word())));
+			case 5:
+				return (char*)(new double(to_int(extract_word())));
+			case 6:
+				return (char*)(new long double(to_int(extract_word())));
+			default:
+				throw Error("intern_error E1");
+			}
+		}
+		else {
+			switch (target_type)
+			{
+			case 0:
+				return new char(to_real(extract_word()));
+			case 1:
+				return (char*)(new int16_t(to_real(extract_word())));
+			case 2:
+				return (char*)(new int32_t(to_real(extract_word())));
+			case 3:
+				return (char*)(new int64_t(to_real(extract_word())));
+			case 4:
+				return (char*)(new float(to_real(extract_word())));
+			case 5:
+				return (char*)(new double(to_real(extract_word())));
+			case 6:
+				return (char*)(new long double(to_real(extract_word())));
+			default:
+				throw Error("intern_error E1");
+			}
+		}
 	}
 	InsData::InsData(InsData && ins)
 	{

@@ -10,6 +10,20 @@ namespace vm
 		while (pc < glo_instructions.size())
 			glo_instructions[pc].first(glo_instructions[pc].second);
 	}
+	namespace write_ins {
+		void write_8(char *ins) {
+			mem.push(*ins);
+		}
+		void write_16(char * ins) {
+			mem.push(*(int16_t*)ins);
+		}
+		void write_32(char *ins) {
+			mem.push(*(int32_t*)ins);
+		}
+		void write_64(char *ins) {
+			mem.push(*(int64_t*)ins);
+		}
+	}
 	// the following code is gened by program 
 	namespace {
 		void i8_sadd_vi(char *ins) {
@@ -200,13 +214,15 @@ namespace vm
 			{ 612,r32_ssub_vv },{ 549,r64_ssub_vi },{ 613,r64_ssub_vv },
 			{ 550,r128_ssub_vi },{ 614,r128_ssub_vv }
 		};
+
+
+
 	}
 	instruction_type gen_bin_op(char _ty, char op)
 	{   //|op  |mod|type|
 		// vv->mod->11
 		// vi->mod->10
 		int16_t ins_index = (int16_t)(_ty) | (op << 8);
-		std::cout << ins_index;
 		if (_bin_operator_ins_table.find(ins_index) == _bin_operator_ins_table.end())
 			throw Error("intern error!");
 		return _bin_operator_ins_table[ins_index];

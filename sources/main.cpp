@@ -24,8 +24,7 @@ void run_hcc() {
 		auto file_content = get_file_content("test.c");
 		using namespace hcc;
 		build_token_stream(file_content);
-		hcc::analyse_expr::create_expr()->emit_code();
-
+		hcc::Parser::build_program();
 		for (auto a : abstract_instruction_table) {
 			a->emit_code();
 		}
@@ -50,12 +49,9 @@ namespace vm
 }
 int main() {
 	using namespace vm;
-	var_type_table.insert({ "1", VarInfo(2, 0) });
-	var_type_table.insert({ "2", VarInfo(2, 8) });
-	vm::ir_content = "(/= %1 %2)";
 	try
 	{
-		vm::parsing();
+		run_hcc();
 	}
 	catch (const vm::Error &e)
 	{

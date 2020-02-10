@@ -28,8 +28,11 @@ namespace vm {
 					3:11-> add op add
 		*/
 		SADD = 0x01, SSUB, SMUL, SDIV,
+		ADD,SUB,MUL,DIV,
 		EQ, NE, GT, GE, LE, LT,
 		AND, OR, W8, W16, W32, W64, WR128,
+		// write from cache
+		WT8,WT16,WT32,WT64,WT128,
 		// sub_ins 
 		/*
 			0-> common
@@ -37,13 +40,20 @@ namespace vm {
 		*/
 		JMP, CALL
 	};
-
+	
 	extern std::string ir_content;
 	extern int ir_index;
 	extern int line_no;
+	extern int cur_pos;
 	extern std::map<std::string, void(*)()> parsing_table;
 	extern std::string cur_instruction; // cur instruction name
-
+	// the max idx of the integer type in an effort to distinguish if the type is integer
+	const int INTEGER_TIDX_MAX = 3;
+	const std::map<std::string, char> stype_table{ { "i8",0 },{ "i16",1 },{ "i32",2 },
+	{ "i64",3 },{ "r32",4 },{ "r64",5 },{ "r128",6 } };
+	// <var_name,<type_index,type_length>>
+	const std::map<std::string, std::pair<int, int>> type_name_info_table{ { "char",{ 0,8 } },{ "short",{ 1,16 } },{ "int",{ 2,32 } },
+	{ "long",{ 3,64 } },{ "float",{ 4,32 } },{ "double",{ 5,64 } } };
 	//======================================================
 	class Error {
 	public:
@@ -79,7 +89,8 @@ namespace vm {
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
+	char *convert_imm_type(int target_type);
 	void parse_bin();
-
+	void parse_decl();
 
 }
