@@ -8,7 +8,10 @@ namespace vm
 	void run()
 	{
 		while (pc < glo_instructions.size())
+		{
 			glo_instructions[pc].first(glo_instructions[pc].second);
+			pc++;
+		}
 	}
 	namespace write_ins {
 		void write_8(char *ins) {
@@ -39,6 +42,7 @@ namespace vm
 			mem.extract<int16_t>(*(index_type*)(ins)) += mem.extract<int16_t>(*(index_type*)(ins + sizeof(index_type)));
 		}
 		void i32_sadd_vi(char *ins) {
+
 			mem.extract<int32_t>(*(index_type*)(ins)) += *(int32_t*)(ins + 4);
 		}
 		void i32_sadd_vv(char *ins) {

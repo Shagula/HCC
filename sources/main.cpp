@@ -8,6 +8,10 @@
 #include <functional>
 std::string instruction_output;
 // last update 2020 2-1 21:38, By Htto.
+namespace vm
+{
+	void run();
+}
 std::string get_file_content(const std::string& filename)
 {
 	using namespace std;
@@ -43,6 +47,11 @@ void test_memory() {
 	int p = mem.push(23.34);
 	std::cout << mem.extract<double>(p);
 }
+void test_ir_translator() {
+	vm::ir_content = get_file_content("tmp.ir");
+	vm::parsing();
+	vm::run();
+}
 namespace vm
 {
 	extern std::string ir_content;
@@ -51,7 +60,8 @@ int main() {
 	using namespace vm;
 	try
 	{
-		run_hcc();
+		test_ir_translator();
+		std::cout << vm::mem.extract<int>(0);
 	}
 	catch (const vm::Error &e)
 	{

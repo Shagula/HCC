@@ -33,8 +33,14 @@ namespace vm
 	}
 	void parsing()
 	{
+
 		while (ir_index < ir_content.size())
 		{
+			if (ir_content[ir_index] != '(')
+			{
+				ir_index++;
+				continue;
+			}
 			match('(');
 			std::string word = extract_word();
 			cur_instruction = word;
@@ -54,6 +60,7 @@ namespace vm
 		// ins name
 		// need to obtain type and mod(the type of the operators, imm or var)
 		auto op1 = process_unit();
+	
 		int op1_is_var = (op1.first >> 4);
 		auto op2 = process_unit();
 		char dd = op2.first | (op1_is_var << 5) | ((op2.first >> 4) << 4);
@@ -65,21 +72,24 @@ namespace vm
 
 	void parse_decl()
 	{
-
 		auto type_result = type_name_info_table.find(cur_instruction);
 		if (type_result == type_name_info_table.end())
 			throw Error("void vm::parse_decl() unknown type!");
+		// the first char of var_name is % so it needs to skip it
 		std::string var_name = extract_word().substr(1);
 		int pos = cur_pos;
 		cur_pos += type_result->second.second / 8;
 		var_type_table.insert({ var_name, VarInfo(type_result->second.first, pos) });
+
+
 		std::string right_value_info = extract_word();
+
 		if (right_value_info[0] == '(')
 		{
 			parse_bin();
 			return;
 		}
-		char *ins = convert_imm_type(type_result->second.first);
+		char *ins = convert_imm_type(right_value_info, type_result->second.first);
 		int byte_count = type_result->second.second / 8;
 		switch (byte_count)
 		{
@@ -206,9 +216,8 @@ namespace vm
 		}
 
 	}
-	char * convert_imm_type(int target_type)
+	char * convert_imm_type(const std::string &type_name, int target_type)
 	{
-		std::string type_name = extract_word();
 		auto type_result = stype_table.find(type_name);
 		if (type_result == stype_table.end())
 			throw Error("invalid type: " + type_name);
@@ -261,23 +270,19 @@ namespace vm
 	InsData::InsData(InsData && ins)
 	{
 		info = ins.info;
+		length = ins.length;
 		ins.info = nullptr;
 	}
 	void InsData::push(InsData& rhs)
 	{
 		char *tmp = new char[length + rhs.length];
 		int i = 0;
-		for (i = 0; i < length; i++) {
-			tmp[i] = info[i];
-		}
-		i++;
-		for (int j = 0; j < rhs.length; j++) {
-			tmp[i + j] = rhs.info[j];
-		}
+		memcpy(tmp, info, length);
+		memcpy(tmp + length, rhs.info, rhs.length);
 		delete[] rhs.info;
 		delete[] info;
-		info = tmp;
 		rhs.info = nullptr;
+		info = tmp;
 		length += rhs.length;
 	}
 }

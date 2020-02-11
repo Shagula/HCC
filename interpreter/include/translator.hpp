@@ -28,11 +28,11 @@ namespace vm {
 					3:11-> add op add
 		*/
 		SADD = 0x01, SSUB, SMUL, SDIV,
-		ADD,SUB,MUL,DIV,
+		ADD, SUB, MUL, DIV,
 		EQ, NE, GT, GE, LE, LT,
 		AND, OR, W8, W16, W32, W64, WR128,
 		// write from cache
-		WT8,WT16,WT32,WT64,WT128,
+		WT8, WT16, WT32, WT64, WT128,
 		// sub_ins 
 		/*
 			0-> common
@@ -40,7 +40,7 @@ namespace vm {
 		*/
 		JMP, CALL
 	};
-	
+
 	extern std::string ir_content;
 	extern int ir_index;
 	extern int line_no;
@@ -76,7 +76,9 @@ namespace vm {
 		InsData(const InsData &) = delete;
 		InsData(InsData &&ins);
 		void push(InsData&);
-		char *release() { return info; info = nullptr; }
+		char *release() {
+			char *tmp = info; info = nullptr; return tmp;
+		}
 		int length = 0;
 		char *info = nullptr;
 		~InsData() {
@@ -89,7 +91,7 @@ namespace vm {
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
-	char *convert_imm_type(int target_type);
+	char *convert_imm_type(const std::string&, int target_type);
 	void parse_bin();
 	void parse_decl();
 
