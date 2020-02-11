@@ -83,10 +83,13 @@ namespace vm
 
 
 		std::string right_value_info = extract_word();
-
+		// bin_op factor
 		if (right_value_info[0] == '(')
 		{
+			match('(');
+			cur_instruction = extract_word();
 			parse_bin();
+			match(')');
 			return;
 		}
 		char *ins = convert_imm_type(right_value_info, type_result->second.first);

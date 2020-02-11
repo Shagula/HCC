@@ -32,13 +32,12 @@ namespace vm {
 		EQ, NE, GT, GE, LE, LT,
 		AND, OR, W8, W16, W32, W64, WR128,
 		// write from cache
-		WT8, WT16, WT32, WT64, WT128,
+		WT8, WT16, WT32, WT64, WT128
 		// sub_ins 
 		/*
 			0-> common
 			1-> Expr
 		*/
-		JMP, CALL
 	};
 
 	extern std::string ir_content;
