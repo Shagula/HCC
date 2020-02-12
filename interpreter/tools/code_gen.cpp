@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <map>
 #include <string>
 // I merely don't want to imply strange lambda skills to simplify the code.
@@ -18,6 +18,7 @@ enum InsTag :char {
 	*/
 };
 std::string map_content = "std::map<int16_t,instruction_type> _bin_operator_ins_table={";
+//=========================s系列附带赋值的如+= ,-= 这种不允许第一个操作数是右值
 std::string func_template(std::string func_name, std::string cvt, std::string op, std::string off) {
 	std::string ret = "void " + func_name + " (char *ins){\n"
 		+ "\tmem.extract<" + cvt + ">(*(index_type*)(ins))" + op + " *(" + cvt + "*)(ins+"
@@ -30,6 +31,8 @@ std::string var_op_var_func_template(std::string func_name, std::string cvt, std
 		+"));\n}\n";
 	return ret;
 }
+
+// common 系列
 std::string common_bin_op_func_temp_vi(std::string func_name, std::string cvt, std::string op, std::string off) {
 	std::string ret = "void " + func_name + " (char *ins){\n"
 		+ "\tmy_memcpy(intern_result_buf,mem.extract<" + cvt + ">(*(index_type*)(ins))" + op + " *(" + cvt + "*)(ins+"
@@ -40,6 +43,22 @@ std::string common_bin_op_func_temp_vv(std::string func_name, std::string cvt, s
 	std::string ret = "void " + func_name + " (char *ins){\n"
 		+ "\tmy_memcpy(intern_result_buf,mem.extract<" + cvt + ">(*(index_type*)(ins))" + op + " mem.extract<" + cvt + ">(*(index_type*)(ins+sizeof(index_type)" +
 		+")));\n}\n";
+	return ret;
+}
+
+std::string common_bin_op_func_temp_iv(std::string func_name, std::string cvt, std::string op, std::string off) {
+	std::string ret = "void " + func_name + " (char *ins){\n"
+		+ "\tmy_memcpy(intern_result_buf,*(" + cvt + "*)(ins)" + op + "mem.extract<" + cvt + ">(*(index_type*)(ins+"
+		+ off + ")));\n}\n";
+
+	return ret;
+}
+
+std::string common_bin_op_func_temp_ii(std::string func_name, std::string cvt, std::string op, std::string off) {
+	std::string ret = "void " + func_name + " (char *ins){\n"
+		+ "\tmy_memcpy(intern_result_buf,*(" + cvt + "*)(ins)" + op + " *(" + cvt + "*)(ins+"
+		+ off + "));\n}\n";
+
 	return ret;
 }
 
@@ -158,8 +177,64 @@ std::string gen_code2() {
 	}
 	return ret;
 }
+std::string gen_code3() {
+	using namespace std;
+	std::string integer_bype_name[]{
+		"char","int16_t","int32_t","int64_t","float","double","long double"
+	};
+	std::map<std::string, std::string> op_name_map{
+		{ "sub","-" },{ "add","+" },{ "mul","*" },{ "div","/" }
+	};
+	std::map<std::string, InsTag> op_tag_map{
+		{ "sub",SUB },{ "add",ADD },{ "mul",MUL },{ "div",DIV }
+	};
+	std::string ret;
+	for (auto a : op_name_map)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int byte = pow(2, i);
+			std::string func_name = "i" + std::to_string(byte * 8) + "_" + a.first;
+
+
+			int16_t index = i;
+			index = index | 1 << 4;
+			index = index | (int)op_tag_map[a.first] << 8;
+
+			map_content += "{" + to_string(index) + "," + func_name + "_iv},";
+			cnt++;
+			if (cnt % 3 == 0) { map_content += "\n\t"; }
+			index &= 0xFF0F;
+			map_content += "{" + to_string(index) + "," + func_name + "_ii},";
+			cnt++;
+			if (cnt % 3 == 0) { map_content += "\n\t"; }
+			ret += common_bin_op_func_temp_iv(func_name + "_iv", integer_bype_name[i], a.second, std::to_string(byte));
+			ret += common_bin_op_func_temp_ii(func_name + "_ii", integer_bype_name[i], a.second, std::to_string(byte));
+		}
+		for (int i = 4; i < 7; i++)
+		{
+			int byte = pow(2, i - 2);
+			std::string func_name = "r" + std::to_string(byte * 8) + "_" + a.first;
+
+			int16_t index = i;
+			index = index | 1 << 4;
+			index = index | (int)op_tag_map[a.first] << 8;
+
+			map_content += "{" + to_string(index) + "," + func_name + "_iv},";
+			cnt++;
+			if (cnt % 3 == 0) { map_content += "\n\t"; }
+			index &= 0xFF0F;
+			map_content += "{" + to_string(index) + "," + func_name + "_ii},";
+			cnt++;
+			if (cnt % 3 == 0) { map_content += "\n\t"; }
+			ret += common_bin_op_func_temp_iv(func_name + "_iv", integer_bype_name[i], a.second, std::to_string(byte));
+			ret += common_bin_op_func_temp_ii(func_name + "_ii", integer_bype_name[i], a.second, std::to_string(byte));
+		}
+	}
+	return ret;
+}
 int driver() {
-	std::cout << gen_code2();
+	std::cout << gen_code3();
 	map_content.back() = '\n';
 	map_content += "};";
 	std::cout << map_content;

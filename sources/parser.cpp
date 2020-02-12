@@ -44,8 +44,6 @@ namespace hcc {
 			if (expr->get_node_type() == NodeType::BIN_OP)
 				expr->set_type(get_type());
 			std::string tmp = expr->to_string();
-			if (expr->get_type() != get_type() && _is_value_node(expr->get_node_type()))
-				tmp = type_convert(expr->get_type(), get_type(), expr);
 			ret += " " + tmp + ")";
 
 			instructions.push_back(ret);

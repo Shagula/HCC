@@ -48,6 +48,152 @@ namespace vm
 	{
 		memcpy(_dst, &src, sizeof(src));
 	}
+	// variable convert
+	namespace {
+		void i8_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i8_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i8_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i8_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i8_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i8_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<char>(*(index_type*)(ins)));
+		}
+		void i16_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i16_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i16_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i16_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i16_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i16_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<int16_t>(*(index_type*)(ins)));
+		}
+		void i32_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i32_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i32_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i32_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i32_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i32_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<int32_t>(*(index_type*)(ins)));
+		}
+		void i64_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void i64_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void i64_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void i64_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void i64_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void i64_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<int64_t>(*(index_type*)(ins)));
+		}
+		void r32_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r32_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r32_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r32_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r32_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r32_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<float>(*(index_type*)(ins)));
+		}
+		void r64_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r64_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r64_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r64_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r64_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r64_to_r128(char *ins) {
+			my_memcpy(intern_result_buf, (long double)mem.extract<double>(*(index_type*)(ins)));
+		}
+		void r128_to_i8(char *ins) {
+			my_memcpy(intern_result_buf, (char)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		void r128_to_i16(char *ins) {
+			my_memcpy(intern_result_buf, (int16_t)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		void r128_to_i32(char *ins) {
+			my_memcpy(intern_result_buf, (int32_t)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		void r128_to_i64(char *ins) {
+			my_memcpy(intern_result_buf, (int64_t)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		void r128_to_r32(char *ins) {
+			my_memcpy(intern_result_buf, (float)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		void r128_to_r64(char *ins) {
+			my_memcpy(intern_result_buf, (double)mem.extract<long double>(*(index_type*)(ins)));
+		}
+		std::map<int16_t, instruction_type> _conv_operator_ins_table = { { 1,i8_to_i16 },{ 2,i8_to_i32 },
+			{ 3,i8_to_i64 },{ 4,i8_to_r32 },{ 5,i8_to_r64 },
+			{ 6,i8_to_r128 },{ 16,i16_to_i8 },{ 18,i16_to_i32 },
+			{ 19,i16_to_i64 },{ 20,i16_to_r32 },{ 21,i16_to_r64 },
+			{ 22,i16_to_r128 },{ 32,i32_to_i8 },{ 33,i32_to_i16 },
+			{ 35,i32_to_i64 },{ 36,i32_to_r32 },{ 37,i32_to_r64 },
+			{ 38,i32_to_r128 },{ 48,i64_to_i8 },{ 49,i64_to_i16 },
+			{ 50,i64_to_i32 },{ 52,i64_to_r32 },{ 53,i64_to_r64 },
+			{ 54,i64_to_r128 },{ 64,r32_to_i8 },{ 65,r32_to_i16 },
+			{ 66,r32_to_i32 },{ 67,r32_to_i64 },{ 69,r32_to_r64 },
+			{ 70,r32_to_r128 },{ 80,r64_to_i8 },{ 81,r64_to_i16 },
+			{ 82,r64_to_i32 },{ 83,r64_to_i64 },{ 84,r64_to_r32 },
+			{ 86,r64_to_r128 },{ 96,r128_to_i8 },{ 97,r128_to_i16 },
+			{ 98,r128_to_i32 },{ 99,r128_to_i64 },{ 100,r128_to_r32 },
+			{ 101,r128_to_r64 }
+		};
+	}
+	// + ,- ,*,/
 	namespace {
 		void i8_add_iv(char *ins) {
 			my_memcpy(intern_result_buf, *(char*)(ins)+mem.extract<char>(*(index_type*)(ins + 1)));
@@ -622,14 +768,20 @@ namespace vm
 
 
 	}
+	instruction_type gen_covert_op(char t1, char t2)
+	{
+		int16_t ins_index = (int16_t)t1 << 4 | t2;
+		if (_conv_operator_ins_table.find(ins_index) == _conv_operator_ins_table.end())
+			throw Error("intern error! E4");
+		return _conv_operator_ins_table[ins_index];
+	}
 	instruction_type gen_bin_op(char _ty, char op)
 	{   //|op  |mod|type|
 		// vv->mod->11
 		// vi->mod->10
 		int16_t ins_index = (int16_t)(_ty) | (op << 8);
 		if (_bin_operator_ins_table.find(ins_index) == _bin_operator_ins_table.end())
-			throw Error("intern error!");
+			throw Error("intern error! E5");
 		return _bin_operator_ins_table[ins_index];
-		//return ret;
 	}
 }

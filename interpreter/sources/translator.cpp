@@ -16,7 +16,7 @@ namespace vm
 		void write_t_64(char *ins);
 	}
 	int find_type(const std::string &var_name);
-
+	instruction_type gen_covert_op(char t1, char t2);
 	index_type find_pos(const std::string &var_name);
 	//=============================== vars===============================
 	std::string ir_content;
@@ -65,11 +65,11 @@ namespace vm
 		auto tag_result = si_table.find(cur_instruction);
 		if (tag_result == si_table.end())
 			throw Error(cur_instruction + " invalid binary operation");
-		
+
 		// ins name
 		// need to obtain type and mod(the type of the operators, imm or var)
 		auto op1 = process_unit();
-		
+
 		int op1_is_var = (op1.first >> 4);
 		auto op2 = process_unit();
 		char dd = op2.first | (op1_is_var << 5) | ((op2.first >> 4) << 4);
@@ -91,9 +91,9 @@ namespace vm
 		var_type_table.insert({ var_name, VarInfo(type_result->second.first, pos) });
 
 		int byte_count = type_result->second.second / 8;
-		
+
 		// bin_op factor
-		if (ir_content[ir_index]=='(')
+		if (ir_content[ir_index] == '(')
 		{
 			match('(');
 			cur_instruction = extract_word();
@@ -119,9 +119,37 @@ namespace vm
 			}
 			return;
 		}
+		else if (ir_content[ir_index] == '%')
+		{
+			std::string rhs_var_name = extract_word().substr(1);
+			char * ins = new char[8];
+			memset(ins, find_pos(rhs_var_name), sizeof(index_type));
+			//convert to ache
+			glo_instructions.push_back({ gen_covert_op(find_type(rhs_var_name),type_result->second.first),ins });
+			// write var from ache
+			switch (byte_count)
+			{
+			case 1:
+				glo_instructions.push_back({ write_ins::write_t_8,nullptr });
+				return;
+			case 2:
+				glo_instructions.push_back({ write_ins::write_t_16,nullptr });
+				return;
+			case 4:
+				glo_instructions.push_back({ write_ins::write_t_32,nullptr });
+				return;
+			case 8:
+				glo_instructions.push_back({ write_ins::write_t_64,nullptr });
+				return;
+			default:
+				throw Error("intern_error E3");
+				break;
+			}
+			return;
+		}
 		std::string right_value_info = extract_word();
 		char *ins = convert_imm_type(right_value_info, type_result->second.first);
-	
+
 		switch (byte_count)
 		{
 		case 1:
