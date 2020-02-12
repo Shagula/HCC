@@ -10,6 +10,10 @@ namespace vm
 		void write_16(char * ins);
 		void write_32(char *ins);
 		void write_64(char *ins);
+		void write_t_8(char *ins);
+		void write_t_16(char * ins);
+		void write_t_32(char *ins);
+		void write_t_64(char *ins);
 	}
 	int find_type(const std::string &var_name);
 
@@ -21,7 +25,7 @@ namespace vm
 	int line_no = 1;
 	std::map<std::string, void(*)()> parsing_table{
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },
-		{"int",parse_decl},{"char",parse_bin},{"long",parse_bin},{"float",parse_bin},{"double",parse_bin}
+		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl }
 	};
 	//=====================================parser========================
 	std::string cur_instruction; // cur instruction name
@@ -49,23 +53,28 @@ namespace vm
 				throw Error("invaild instruction: " + word);
 			result->second();
 			match(')');
+			line_no++;
 		}
 	}
 	void parse_bin()
 	{
 		const std::map<std::string, InsTag> si_table{
-			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{ "/=",SDIV }
+			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{ "/=",SDIV },{"+",ADD},{"-",SUB},{"*",MUL},{"/",DIV}
 		};
-		InsTag tag = si_table.find(cur_instruction)->second;
+
+		auto tag_result = si_table.find(cur_instruction);
+		if (tag_result == si_table.end())
+			throw Error(cur_instruction + " invalid binary operation");
+		
 		// ins name
 		// need to obtain type and mod(the type of the operators, imm or var)
 		auto op1 = process_unit();
-	
+		
 		int op1_is_var = (op1.first >> 4);
 		auto op2 = process_unit();
 		char dd = op2.first | (op1_is_var << 5) | ((op2.first >> 4) << 4);
 		op1.second.push(op2.second);
-		auto ins = gen_bin_op(dd, tag);
+		auto ins = gen_bin_op(dd, tag_result->second);
 		// load instruction.
 		glo_instructions.push_back({ ins, op1.second.release() });
 	}
@@ -81,40 +90,50 @@ namespace vm
 		cur_pos += type_result->second.second / 8;
 		var_type_table.insert({ var_name, VarInfo(type_result->second.first, pos) });
 
-
-		std::string right_value_info = extract_word();
+		int byte_count = type_result->second.second / 8;
+		
 		// bin_op factor
-		if (right_value_info[0] == '(')
+		if (ir_content[ir_index]=='(')
 		{
 			match('(');
 			cur_instruction = extract_word();
 			parse_bin();
 			match(')');
+			switch (byte_count)
+			{
+			case 1:
+				glo_instructions.push_back({ write_ins::write_t_8,nullptr });
+				return;
+			case 2:
+				glo_instructions.push_back({ write_ins::write_t_16,nullptr });
+				return;
+			case 4:
+				glo_instructions.push_back({ write_ins::write_t_32,nullptr });
+				return;
+			case 8:
+				glo_instructions.push_back({ write_ins::write_t_64,nullptr });
+				return;
+			default:
+				throw Error("intern_error E3");
+				break;
+			}
 			return;
 		}
+		std::string right_value_info = extract_word();
 		char *ins = convert_imm_type(right_value_info, type_result->second.first);
-		int byte_count = type_result->second.second / 8;
+	
 		switch (byte_count)
 		{
-		case 0:
+		case 1:
 			glo_instructions.push_back({ write_ins::write_8,ins });
 			return;
-		case 1:
-			glo_instructions.push_back({ write_ins::write_16,ins });
-			return;
 		case 2:
-			glo_instructions.push_back({ write_ins::write_32,ins });
-			return;
-		case 3:
-			glo_instructions.push_back({ write_ins::write_64,ins });
+			glo_instructions.push_back({ write_ins::write_16,ins });
 			return;
 		case 4:
 			glo_instructions.push_back({ write_ins::write_32,ins });
 			return;
-		case 5:
-			glo_instructions.push_back({ write_ins::write_64,ins });
-			return;
-		case 6:
+		case 8:
 			glo_instructions.push_back({ write_ins::write_64,ins });
 			return;
 		default:
@@ -135,6 +154,8 @@ namespace vm
 			ret += cur_ch;
 			cur_ch = ir_content[++ir_index];
 		}
+		while (cur_ch == ' ')
+			cur_ch = ir_content[++ir_index];
 		return ret;
 	}
 
