@@ -24,7 +24,7 @@ namespace vm
 	int ir_index = 0;
 	int line_no = 1;
 	std::map<std::string, void(*)()> parsing_table{
-		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },
+		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
 		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl }
 	};
 	//=====================================parser========================
@@ -59,7 +59,7 @@ namespace vm
 	void parse_bin()
 	{
 		const std::map<std::string, InsTag> si_table{
-			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{ "/=",SDIV },{"+",ADD},{"-",SUB},{"*",MUL},{"/",DIV}
+			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{"=",ASSIGN}, { "/=",SDIV },{"+",ADD},{"-",SUB},{"*",MUL},{"/",DIV}
 		};
 
 		auto tag_result = si_table.find(cur_instruction);
@@ -124,7 +124,7 @@ namespace vm
 			std::string rhs_var_name = extract_word().substr(1);
 			char * ins = new char[8];
 			memset(ins, find_pos(rhs_var_name), sizeof(index_type));
-			//convert to ache
+			// convert to ache
 			glo_instructions.push_back({ gen_covert_op(find_type(rhs_var_name),type_result->second.first),ins });
 			// write var from ache
 			switch (byte_count)

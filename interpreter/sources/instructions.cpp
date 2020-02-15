@@ -17,6 +17,12 @@ namespace vm
 		}
 	}
 	namespace write_ins {
+		//write data from a position
+		void write_p_8(char *ins) { mem.push(mem.extract<char>(*(index_type*)ins)); }
+		void write_p_16(char *ins) { mem.push(mem.extract<int16_t>(*(index_type*)ins)); }
+		void write_p_32(char *ins) { mem.push(mem.extract<int32_t>(*(index_type*)ins)); }
+		void write_p_64(char *ins) { mem.push(mem.extract<int64_t>(*(index_type*)ins)); }
+		// write imm data
 		void write_8(char *ins) {
 			mem.push(*ins);
 		}
@@ -29,6 +35,7 @@ namespace vm
 		void write_64(char *ins) {
 			mem.push(*(int64_t*)ins);
 		}
+		// write from temp block
 		void write_t_8(char *ins) {
 			mem.push(*intern_result_buf);
 		}
@@ -176,7 +183,9 @@ namespace vm
 		void r128_to_r64(char *ins) {
 			my_memcpy(intern_result_buf, (double)mem.extract<long double>(*(index_type*)(ins)));
 		}
-		std::map<int16_t, instruction_type> _conv_operator_ins_table = { { 1,i8_to_i16 },{ 2,i8_to_i32 },
+		std::map<int16_t, instruction_type> _conv_operator_ins_table = {
+			{ 0, write_ins::write_p_8},{34,write_ins::write_p_32},
+			{ 1,i8_to_i16 },{ 2,i8_to_i32 },
 			{ 3,i8_to_i64 },{ 4,i8_to_r32 },{ 5,i8_to_r64 },
 			{ 6,i8_to_r128 },{ 16,i16_to_i8 },{ 18,i16_to_i32 },
 			{ 19,i16_to_i64 },{ 20,i16_to_r32 },{ 21,i16_to_r64 },
@@ -535,6 +544,48 @@ namespace vm
 	}
 	// the following code is gened by program 
 	namespace {
+		void i8_assign_vi(char *ins) {
+			mem.extract<char>(*(index_type*)(ins)) = *(char*)(ins + 1);
+		}
+		void i8_assign_vv(char *ins) {
+			mem.extract<char>(*(index_type*)(ins)) = mem.extract<char>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void i16_assign_vi(char *ins) {
+			mem.extract<int16_t>(*(index_type*)(ins)) = *(int16_t*)(ins + 2);
+		}
+		void i16_assign_vv(char *ins) {
+			mem.extract<int16_t>(*(index_type*)(ins)) = mem.extract<int16_t>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void i32_assign_vi(char *ins) {
+			mem.extract<int32_t>(*(index_type*)(ins)) = *(int32_t*)(ins + 4);
+		}
+		void i32_assign_vv(char *ins) {
+			mem.extract<int32_t>(*(index_type*)(ins)) = mem.extract<int32_t>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void i64_assign_vi(char *ins) {
+			mem.extract<int64_t>(*(index_type*)(ins)) = *(int64_t*)(ins + 8);
+		}
+		void i64_assign_vv(char *ins) {
+			mem.extract<int64_t>(*(index_type*)(ins)) = mem.extract<int64_t>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void r32_assign_vi(char *ins) {
+			mem.extract<float>(*(index_type*)(ins)) = *(float*)(ins + 4);
+		}
+		void r32_assign_vv(char *ins) {
+			mem.extract<float>(*(index_type*)(ins)) = mem.extract<float>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void r64_assign_vi(char *ins) {
+			mem.extract<double>(*(index_type*)(ins)) = *(double*)(ins + 8);
+		}
+		void r64_assign_vv(char *ins) {
+			mem.extract<double>(*(index_type*)(ins)) = mem.extract<double>(*(index_type*)(ins + sizeof(index_type)));
+		}
+		void r128_assign_vi(char *ins) {
+			mem.extract<long double>(*(index_type*)(ins)) = *(long double*)(ins + 16);
+		}
+		void r128_assign_vv(char *ins) {
+			mem.extract<long double>(*(index_type*)(ins)) = mem.extract<long double>(*(index_type*)(ins + sizeof(index_type)));
+		}
 		void i8_sadd_vi(char *ins) {
 			mem.extract<char>(*(index_type*)(ins)) += *(char*)(ins + 1);
 		}
@@ -548,7 +599,6 @@ namespace vm
 			mem.extract<int16_t>(*(index_type*)(ins)) += mem.extract<int16_t>(*(index_type*)(ins + sizeof(index_type)));
 		}
 		void i32_sadd_vi(char *ins) {
-
 			mem.extract<int32_t>(*(index_type*)(ins)) += *(int32_t*)(ins + 4);
 		}
 		void i32_sadd_vv(char *ins) {
@@ -704,25 +754,31 @@ namespace vm
 		void r128_ssub_vv(char *ins) {
 			mem.extract<long double>(*(index_type*)(ins)) -= mem.extract<long double>(*(index_type*)(ins + sizeof(index_type)));
 		}
-		std::map<int16_t, instruction_type> _bin_operator_ins_table = { { 288,i8_sadd_vi },{ 304,i8_sadd_vv },{ 289,i16_sadd_vi },
-			{ 305,i16_sadd_vv },{ 290,i32_sadd_vi },{ 306,i32_sadd_vv },
-			{ 291,i64_sadd_vi },{ 307,i64_sadd_vv },{ 292,r32_sadd_vi },
-			{ 356,r32_sadd_vv },{ 293,r64_sadd_vi },{ 357,r64_sadd_vv },
-			{ 294,r128_sadd_vi },{ 358,r128_sadd_vv },{ 1056,i8_sdiv_vi },
-			{ 1072,i8_sdiv_vv },{ 1057,i16_sdiv_vi },{ 1073,i16_sdiv_vv },
-			{ 1058,i32_sdiv_vi },{ 1074,i32_sdiv_vv },{ 1059,i64_sdiv_vi },
-			{ 1075,i64_sdiv_vv },{ 1060,r32_sdiv_vi },{ 1124,r32_sdiv_vv },
-			{ 1061,r64_sdiv_vi },{ 1125,r64_sdiv_vv },{ 1062,r128_sdiv_vi },
-			{ 1126,r128_sdiv_vv },{ 800,i8_smul_vi },{ 816,i8_smul_vv },
-			{ 801,i16_smul_vi },{ 817,i16_smul_vv },{ 802,i32_smul_vi },
-			{ 818,i32_smul_vv },{ 803,i64_smul_vi },{ 819,i64_smul_vv },
-			{ 804,r32_smul_vi },{ 868,r32_smul_vv },{ 805,r64_smul_vi },
-			{ 869,r64_smul_vv },{ 806,r128_smul_vi },{ 870,r128_smul_vv },
-			{ 544,i8_ssub_vi },{ 560,i8_ssub_vv },{ 545,i16_ssub_vi },
-			{ 561,i16_ssub_vv },{ 546,i32_ssub_vi },{ 562,i32_ssub_vv },
-			{ 547,i64_ssub_vi },{ 563,i64_ssub_vv },{ 548,r32_ssub_vi },
-			{ 612,r32_ssub_vv },{ 549,r64_ssub_vi },{ 613,r64_ssub_vv },
-			{ 550,r128_ssub_vi },{ 614,r128_ssub_vv },
+		std::map<int16_t, instruction_type> _bin_operator_ins_table = { 
+			{ 6944,i8_assign_vi },{ 6960,i8_assign_vv },{ 6945,i16_assign_vi },
+			{ 6961,i16_assign_vv },{ 6946,i32_assign_vi },{ 6962,i32_assign_vv },
+			{ 6947,i64_assign_vi },{ 6963,i64_assign_vv },{ 6948,r32_assign_vi },
+			{ 7012,r32_assign_vv },{ 6949,r64_assign_vi },{ 7013,r64_assign_vv },
+			{ 6950,r128_assign_vi },{ 7014,r128_assign_vv },{ 288,i8_sadd_vi },
+			{ 304,i8_sadd_vv },{ 289,i16_sadd_vi },{ 305,i16_sadd_vv },
+			{ 290,i32_sadd_vi },{ 306,i32_sadd_vv },{ 291,i64_sadd_vi },
+			{ 307,i64_sadd_vv },{ 292,r32_sadd_vi },{ 356,r32_sadd_vv },
+			{ 293,r64_sadd_vi },{ 357,r64_sadd_vv },{ 294,r128_sadd_vi },
+			{ 358,r128_sadd_vv },{ 1056,i8_sdiv_vi },{ 1072,i8_sdiv_vv },
+			{ 1057,i16_sdiv_vi },{ 1073,i16_sdiv_vv },{ 1058,i32_sdiv_vi },
+			{ 1074,i32_sdiv_vv },{ 1059,i64_sdiv_vi },{ 1075,i64_sdiv_vv },
+			{ 1060,r32_sdiv_vi },{ 1124,r32_sdiv_vv },{ 1061,r64_sdiv_vi },
+			{ 1125,r64_sdiv_vv },{ 1062,r128_sdiv_vi },{ 1126,r128_sdiv_vv },
+			{ 800,i8_smul_vi },{ 816,i8_smul_vv },{ 801,i16_smul_vi },
+			{ 817,i16_smul_vv },{ 802,i32_smul_vi },{ 818,i32_smul_vv },
+			{ 803,i64_smul_vi },{ 819,i64_smul_vv },{ 804,r32_smul_vi },
+			{ 868,r32_smul_vv },{ 805,r64_smul_vi },{ 869,r64_smul_vv },
+			{ 806,r128_smul_vi },{ 870,r128_smul_vv },{ 544,i8_ssub_vi },
+			{ 560,i8_ssub_vv },{ 545,i16_ssub_vi },{ 561,i16_ssub_vv },
+			{ 546,i32_ssub_vi },{ 562,i32_ssub_vv },{ 547,i64_ssub_vi },
+			{ 563,i64_ssub_vv },{ 548,r32_ssub_vi },{ 612,r32_ssub_vv },
+			{ 549,r64_ssub_vi },{ 613,r64_ssub_vv },{ 550,r128_ssub_vi },
+			{ 614,r128_ssub_vv },
 
 			{ 1312,i8_add_vi },{ 1328,i8_add_vv },{ 1313,i16_add_vi },
 			{ 1329,i16_add_vv },{ 1314,i32_add_vi },{ 1330,i32_add_vv },
@@ -772,7 +828,7 @@ namespace vm
 	{
 		int16_t ins_index = (int16_t)t1 << 4 | t2;
 		if (_conv_operator_ins_table.find(ins_index) == _conv_operator_ins_table.end())
-			throw Error("intern error! E4");
+			throw Error("intern error! code: "+std::to_string(ins_index)+" E4");
 		return _conv_operator_ins_table[ins_index];
 	}
 	instruction_type gen_bin_op(char _ty, char op)

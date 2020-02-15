@@ -51,7 +51,7 @@ void test_ir_translator() {
 	vm::ir_content = get_file_content("tmp.ir");
 	vm::parsing();
 	vm::run();
-	std::cout << vm::mem.extract<int>(8);
+	std::cout << vm::mem.extract<int>(4);
 }
 namespace vm
 {
