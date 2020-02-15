@@ -59,7 +59,8 @@ namespace vm
 	void parse_bin()
 	{
 		const std::map<std::string, InsTag> si_table{
-			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{"=",ASSIGN}, { "/=",SDIV },{"+",ADD},{"-",SUB},{"*",MUL},{"/",DIV}
+			{ "+=",SADD },{ "-=",SSUB },{ "*=",SMUL },{"=",ASSIGN}, { "/=",SDIV },{"+",ADD},{"-",SUB},{"*",MUL},{"/",DIV},
+			{"<",LT},{"<=",LE},{">=",GE},{">",GT},{"==",EQ},{"!=",NE}
 		};
 
 		auto tag_result = si_table.find(cur_instruction);

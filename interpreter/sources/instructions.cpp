@@ -55,6 +55,261 @@ namespace vm
 	{
 		memcpy(_dst, &src, sizeof(src));
 	}
+	// compare
+	namespace {
+		void i8_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) == mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) == *(char*)(ins + 1));
+		}
+		void i16_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) == mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) == *(int16_t*)(ins + 2));
+		}
+		void i32_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) == mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) == *(int32_t*)(ins + 4));
+		}
+		void i64_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) == mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) == *(int64_t*)(ins + 8));
+		}
+		void r32_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) == mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) == *(float*)(ins + 4));
+		}
+		void r64_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) == mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) == *(double*)(ins + 8));
+		}
+		void r128_eq_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) == mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_eq_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) == *(long double*)(ins + 16));
+		}
+		void i8_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) >= mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) >= *(char*)(ins + 1));
+		}
+		void i16_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) >= mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) >= *(int16_t*)(ins + 2));
+		}
+		void i32_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) >= mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) >= *(int32_t*)(ins + 4));
+		}
+		void i64_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) >= mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) >= *(int64_t*)(ins + 8));
+		}
+		void r32_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) >= mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) >= *(float*)(ins + 4));
+		}
+		void r64_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) >= mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) >= *(double*)(ins + 8));
+		}
+		void r128_ge_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) >= mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_ge_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) >= *(long double*)(ins + 16));
+		}
+		void i8_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins)>mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins)> *(char*)(ins + 1));
+		}
+		void i16_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins)>mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins)> *(int16_t*)(ins + 2));
+		}
+		void i32_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins)>mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins)> *(int32_t*)(ins + 4));
+		}
+		void i64_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins)>mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins)> *(int64_t*)(ins + 8));
+		}
+		void r32_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins)>mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins)> *(float*)(ins + 4));
+		}
+		void r64_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins)>mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins)> *(double*)(ins + 8));
+		}
+		void r128_gt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins)>mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_gt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins)> *(long double*)(ins + 16));
+		}
+		void i8_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) <= mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) <= *(char*)(ins + 1));
+		}
+		void i16_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) <= mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) <= *(int16_t*)(ins + 2));
+		}
+		void i32_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) <= mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) <= *(int32_t*)(ins + 4));
+		}
+		void i64_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) <= mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) <= *(int64_t*)(ins + 8));
+		}
+		void r32_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) <= mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) <= *(float*)(ins + 4));
+		}
+		void r64_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) <= mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) <= *(double*)(ins + 8));
+		}
+		void r128_le_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) <= mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_le_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) <= *(long double*)(ins + 16));
+		}
+		void i8_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins)<mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins)< *(char*)(ins + 1));
+		}
+		void i16_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins)<mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins)< *(int16_t*)(ins + 2));
+		}
+		void i32_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins)<mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins)< *(int32_t*)(ins + 4));
+		}
+		void i64_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins)<mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins)< *(int64_t*)(ins + 8));
+		}
+		void r32_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins)<mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins)< *(float*)(ins + 4));
+		}
+		void r64_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins)<mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins)< *(double*)(ins + 8));
+		}
+		void r128_lt_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins)<mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_lt_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins)< *(long double*)(ins + 16));
+		}
+		void i8_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) != mem.extract<char>(*(index_type*)(ins + 1)));
+		}
+		void i8_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(char*)(ins) != *(char*)(ins + 1));
+		}
+		void i16_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) != mem.extract<int16_t>(*(index_type*)(ins + 2)));
+		}
+		void i16_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int16_t*)(ins) != *(int16_t*)(ins + 2));
+		}
+		void i32_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) != mem.extract<int32_t>(*(index_type*)(ins + 4)));
+		}
+		void i32_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int32_t*)(ins) != *(int32_t*)(ins + 4));
+		}
+		void i64_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) != mem.extract<int64_t>(*(index_type*)(ins + 8)));
+		}
+		void i64_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(int64_t*)(ins) != *(int64_t*)(ins + 8));
+		}
+		void r32_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) != mem.extract<float>(*(index_type*)(ins + 4)));
+		}
+		void r32_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(float*)(ins) != *(float*)(ins + 4));
+		}
+		void r64_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) != mem.extract<double>(*(index_type*)(ins + 8)));
+		}
+		void r64_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(double*)(ins) != *(double*)(ins + 8));
+		}
+		void r128_ne_iv(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) != mem.extract<long double>(*(index_type*)(ins + 16)));
+		}
+		void r128_ne_ii(char *ins) {
+			my_memcpy(intern_result_buf, *(long double*)(ins) != *(long double*)(ins + 16));
+		}
+	}
 	// variable convert
 	namespace {
 		void i8_to_i16(char *ins) {
@@ -818,7 +1073,36 @@ namespace vm
 			{ 1537,i16_sub_ii },{ 1554,i32_sub_iv },{ 1538,i32_sub_ii },
 			{ 1555,i64_sub_iv },{ 1539,i64_sub_ii },{ 1556,r32_sub_iv },
 			{ 1540,r32_sub_ii },{ 1557,r64_sub_iv },{ 1541,r64_sub_ii },
-			{ 1558,r128_sub_iv },{ 1542,r128_sub_ii }
+			{ 1558,r128_sub_iv },{ 1542,r128_sub_ii },
+
+			{2320,i8_eq_iv},{ 2304,i8_eq_ii },{ 2321,i16_eq_iv },
+			{ 2305,i16_eq_ii },{ 2322,i32_eq_iv },{ 2306,i32_eq_ii },
+			{ 2323,i64_eq_iv },{ 2307,i64_eq_ii },{ 2324,r32_eq_iv },
+			{ 2308,r32_eq_ii },{ 2325,r64_eq_iv },{ 2309,r64_eq_ii },
+			{ 2326,r128_eq_iv },{ 2310,r128_eq_ii },{ 3088,i8_ge_iv },
+			{ 3072,i8_ge_ii },{ 3089,i16_ge_iv },{ 3073,i16_ge_ii },
+			{ 3090,i32_ge_iv },{ 3074,i32_ge_ii },{ 3091,i64_ge_iv },
+			{ 3075,i64_ge_ii },{ 3092,r32_ge_iv },{ 3076,r32_ge_ii },
+			{ 3093,r64_ge_iv },{ 3077,r64_ge_ii },{ 3094,r128_ge_iv },
+			{ 3078,r128_ge_ii },{ 2832,i8_gt_iv },{ 2816,i8_gt_ii },
+			{ 2833,i16_gt_iv },{ 2817,i16_gt_ii },{ 2834,i32_gt_iv },
+			{ 2818,i32_gt_ii },{ 2835,i64_gt_iv },{ 2819,i64_gt_ii },
+			{ 2836,r32_gt_iv },{ 2820,r32_gt_ii },{ 2837,r64_gt_iv },
+			{ 2821,r64_gt_ii },{ 2838,r128_gt_iv },{ 2822,r128_gt_ii },
+			{ 3344,i8_le_iv },{ 3328,i8_le_ii },{ 3345,i16_le_iv },
+			{ 3329,i16_le_ii },{ 3346,i32_le_iv },{ 3330,i32_le_ii },
+			{ 3347,i64_le_iv },{ 3331,i64_le_ii },{ 3348,r32_le_iv },
+			{ 3332,r32_le_ii },{ 3349,r64_le_iv },{ 3333,r64_le_ii },
+			{ 3350,r128_le_iv },{ 3334,r128_le_ii },{ 3600,i8_lt_iv },
+			{ 3584,i8_lt_ii },{ 3601,i16_lt_iv },{ 3585,i16_lt_ii },
+			{ 3602,i32_lt_iv },{ 3586,i32_lt_ii },{ 3603,i64_lt_iv },
+			{ 3587,i64_lt_ii },{ 3604,r32_lt_iv },{ 3588,r32_lt_ii },
+			{ 3605,r64_lt_iv },{ 3589,r64_lt_ii },{ 3606,r128_lt_iv },
+			{ 3590,r128_lt_ii },{ 2576,i8_ne_iv },{ 2560,i8_ne_ii },
+			{ 2577,i16_ne_iv },{ 2561,i16_ne_ii },{ 2578,i32_ne_iv },
+			{ 2562,i32_ne_ii },{ 2579,i64_ne_iv },{ 2563,i64_ne_ii },
+			{ 2580,r32_ne_iv },{ 2564,r32_ne_ii },{ 2581,r64_ne_iv },
+			{ 2565,r64_ne_ii },{ 2582,r128_ne_iv },{ 2566,r128_ne_ii }
 		};
 
 

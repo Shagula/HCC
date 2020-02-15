@@ -1,9 +1,9 @@
 ﻿#include <iostream>
 #include <map>
 #include <string>
-// I merely don't want to imply strange lambda skills to simplify the code.
-// So generate those functions by programs is okay.
-// exclude the file from build
+// I merely don't want to utilize strange lambda skills to simplify the code.
+// So generate those functions by programs is a wise choice I reckon.
+// exclude the file from the build
 enum InsTag :char {
 	SADD = 0x01, SSUB, SMUL, SDIV,
 	ADD, SUB, MUL, DIV,
@@ -16,6 +16,7 @@ enum InsTag :char {
 	0-> common
 	1-> Expr
 	*/
+	ASSIGN,
 };
 std::string map_content = "std::map<int16_t,instruction_type> _bin_operator_ins_table={";
 //=========================s系列附带赋值的如+= ,-= 这种不允许第一个操作数是右值
@@ -70,10 +71,10 @@ std::string gen_code() {
 		"char","int16_t","int32_t","int64_t","float","double","long double"
 	};
 	std::map<std::string, std::string> op_name_map{
-		{ "ssub","-=" },{ "sadd","+=" },{ "smul","*=" },{ "sdiv","/=" }
+		{ "ssub","-=" },{ "sadd","+=" },{ "smul","*=" },{ "sdiv","/=" },{ "assign","=" }
 	};
 	std::map<std::string, InsTag> op_tag_map{
-		{ "ssub",SSUB },{ "sadd",SADD },{ "smul",SMUL },{ "sdiv",SDIV }
+		{ "ssub",SSUB },{ "sadd",SADD },{ "smul",SMUL },{ "sdiv",SDIV },{ "assign",ASSIGN }
 	};
 	std::string ret;
 	for (auto a : op_name_map)
@@ -234,7 +235,7 @@ std::string gen_code3() {
 	return ret;
 }
 int driver() {
-	std::cout << gen_code3();
+	std::cout << gen_code();
 	map_content.back() = '\n';
 	map_content += "};";
 	std::cout << map_content;
