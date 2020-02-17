@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <map>
+#include <vector>
 #include <string>
 namespace vm {
 	using index_type = int;
@@ -46,6 +47,8 @@ namespace vm {
 	extern int line_no;
 	extern int cur_pos;
 	extern std::map<std::string, void(*)()> parsing_table;
+	extern std::map<std::string, int> _tag_table;
+	extern std::map<std::string, std::vector<char *>>_indefinate_tag_table;
 	extern std::string cur_instruction; // cur instruction name
 	// the max idx of the integer type in an effort to distinguish if the type is integer
 	const int INTEGER_TIDX_MAX = 3;
@@ -87,12 +90,22 @@ namespace vm {
 		}
 	};
 	//======================================================
+	void set_tag(const std::string &tag_name);
 	void match(char ch);
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
 	char *convert_imm_type(const std::string&, int target_type);
+
 	void parse_bin();
 	void parse_decl();
+	void parse_jmp();
+	void parse_tag();
+	void parse_print_str();
+	void parse_print_var();
+
+	void set_tag(const std::string &tag_name);
+	// -1: tag no found
+	int get_tag_pos(const std::string &tag_name);
 
 }

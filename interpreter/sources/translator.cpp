@@ -2,9 +2,42 @@
 #include "../include/instructions.hpp"
 #include "../include/word_table.hpp"
 #include <string>
+#include <cstring>
+namespace hcc
+{
+	char _convert_escape(char);
+}
 namespace vm
 {
+	std::string to_string(std::string &str, int & pos) {
+		std::string value;
+		// jump over '
+		pos++;
+		for (; pos < str.size(); pos++)
+		{
+			if (str[pos] == '\"')
+				break;
+			if (str[pos] == '\\')
+			{
+				pos++;
+				if (pos >= str.size())
+					throw Error("bad string");
+				char tmp = hcc::_convert_escape(str[pos]);
+				value += tmp;
+			}
+			else
+				value += str[pos];
+		}
+		pos++;
+		return value;
+	}
+
 	//===============================externs=============================
+
+	namespace print_ins {
+		void print_str(char *ins);
+		void print_int_var(char *ins);
+	}
 	namespace write_ins {
 		void write_8(char *ins);
 		void write_16(char * ins);
@@ -14,6 +47,9 @@ namespace vm
 		void write_t_16(char * ins);
 		void write_t_32(char *ins);
 		void write_t_64(char *ins);
+	}
+	namespace  control_ins {
+		void jmp(char *ins);
 	}
 	int find_type(const std::string &var_name);
 	instruction_type gen_covert_op(char t1, char t2);
@@ -25,8 +61,11 @@ namespace vm
 	int line_no = 1;
 	std::map<std::string, void(*)()> parsing_table{
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
-		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl }
+		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl },
+		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var}
 	};
+	std::map<std::string, int> _tag_table;
+	std::map<std::string, std::vector<char *>>_indefinate_tag_table;
 	//=====================================parser========================
 	std::string cur_instruction; // cur instruction name
 	//====================================================================
@@ -171,6 +210,66 @@ namespace vm
 		}
 	}
 
+	void parse_jmp()
+	{
+		std::string tag_name = extract_word();
+		int pos = get_tag_pos(tag_name);
+		char * ptr = new char[4];
+		*(index_type*)ptr = pos;
+		if (pos == -1)
+		{
+			_indefinate_tag_table[tag_name].push_back(ptr);
+		}
+		glo_instructions.push_back({ control_ins::jmp,ptr });
+	}
+
+	void parse_tag() {
+		set_tag(extract_word());
+	}
+	void parse_print_str()
+	{
+		while (ir_content[ir_index] == ' ') ir_index++;
+		std::string result = vm::to_string(ir_content, ir_index);
+		char *tmp = new char[result.size()+1];
+		strcpy_s(tmp, result.size() + 1,result.c_str());
+		glo_instructions.push_back({ print_ins::print_str,tmp });
+	}
+
+	void parse_print_var()
+	{
+		std::string var_name = extract_word();
+		char *tmp = new char[sizeof(index_type)];
+		int pos = find_pos(var_name);
+		if (pos < 0)
+			throw Error("undefined var " + var_name);
+		*(index_type*)tmp = pos;
+		glo_instructions.push_back({ print_ins::print_int_var,tmp });
+	}
+
+	void set_tag(const std::string & tag_name)
+	{
+		if (_indefinate_tag_table.count(tag_name))
+		{
+			index_type pos = glo_instructions.size();
+			auto result = _indefinate_tag_table.find(tag_name);
+			for (int i = 0; i < result->second.size(); i++)
+			{
+				// the ptr points to a instruction which should store position infomation
+				char * ptr = result->second[i];
+				*(index_type*)ptr = pos;
+			}
+			_tag_table.insert({ tag_name,glo_instructions.size() });
+		}
+	}
+
+	int get_tag_pos(const std::string & tag_name)
+	{
+		auto result = _tag_table.find(tag_name);
+		if (result == _tag_table.end())
+			return -1;
+		return result->second;
+	}
+
 	//======================instruction proccessor========================
 	std::string extract_word()
 	{
@@ -187,6 +286,7 @@ namespace vm
 			cur_ch = ir_content[++ir_index];
 		return ret;
 	}
+
 
 	int64_t to_int(std::string str) {
 		int64_t ret = 0;
