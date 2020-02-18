@@ -50,6 +50,7 @@ namespace vm
 	}
 	namespace  control_ins {
 		void jmp(char *ins);
+		void iffalse(char *ins);
 	}
 	int find_type(const std::string &var_name);
 	instruction_type gen_covert_op(char t1, char t2);
@@ -62,7 +63,7 @@ namespace vm
 	std::map<std::string, void(*)()> parsing_table{
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
 		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl },
-		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var}
+		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var},{"iffalse",parse_iffalse}
 	};
 	std::map<std::string, int> _tag_table;
 	std::map<std::string, std::vector<char *>>_indefinate_tag_table;
@@ -76,9 +77,9 @@ namespace vm
 	}
 	void parsing()
 	{
-
 		while (ir_index < ir_content.size())
 		{
+
 			if (ir_content[ir_index] != '(')
 			{
 				ir_index++;
@@ -139,19 +140,21 @@ namespace vm
 			cur_instruction = extract_word();
 			parse_bin();
 			match(')');
+			char *ins = new char[sizeof(index_type)];
+			*(index_type*)ins = pos;
 			switch (byte_count)
 			{
 			case 1:
-				glo_instructions.push_back({ write_ins::write_t_8,nullptr });
+				glo_instructions.push_back({ write_ins::write_t_8,ins });
 				return;
 			case 2:
-				glo_instructions.push_back({ write_ins::write_t_16,nullptr });
+				glo_instructions.push_back({ write_ins::write_t_16,ins });
 				return;
 			case 4:
-				glo_instructions.push_back({ write_ins::write_t_32,nullptr });
+				glo_instructions.push_back({ write_ins::write_t_32,ins });
 				return;
 			case 8:
-				glo_instructions.push_back({ write_ins::write_t_64,nullptr });
+				glo_instructions.push_back({ write_ins::write_t_64,ins });
 				return;
 			default:
 				throw Error("intern_error E3");
@@ -162,7 +165,7 @@ namespace vm
 		else if (ir_content[ir_index] == '%')
 		{
 			std::string rhs_var_name = extract_word().substr(1);
-			char * ins = new char[8];
+			char * ins = new char[sizeof(index_type)];
 			memset(ins, find_pos(rhs_var_name), sizeof(index_type));
 			// convert to ache
 			glo_instructions.push_back({ gen_covert_op(find_type(rhs_var_name),type_result->second.first),ins });
@@ -188,21 +191,21 @@ namespace vm
 			return;
 		}
 		std::string right_value_info = extract_word();
-		char *ins = convert_imm_type(right_value_info, type_result->second.first);
-
+		InsData ins = convert_imm_type(right_value_info, type_result->second.first);
+		ins.push(new int(pos), sizeof(pos));
 		switch (byte_count)
 		{
 		case 1:
-			glo_instructions.push_back({ write_ins::write_8,ins });
+			glo_instructions.push_back({ write_ins::write_8,ins.release() });
 			return;
 		case 2:
-			glo_instructions.push_back({ write_ins::write_16,ins });
+			glo_instructions.push_back({ write_ins::write_16,ins.release() });
 			return;
 		case 4:
-			glo_instructions.push_back({ write_ins::write_32,ins });
+			glo_instructions.push_back({ write_ins::write_32,ins.release() });
 			return;
 		case 8:
-			glo_instructions.push_back({ write_ins::write_64,ins });
+			glo_instructions.push_back({ write_ins::write_64,ins.release() });
 			return;
 		default:
 			throw Error("intern_error E3");
@@ -215,23 +218,37 @@ namespace vm
 		std::string tag_name = extract_word();
 		int pos = get_tag_pos(tag_name);
 		char * ptr = new char[4];
-		*(index_type*)ptr = pos;
 		if (pos == -1)
-		{
 			_indefinate_tag_table[tag_name].push_back(ptr);
-		}
+		*(index_type*)ptr = pos;
 		glo_instructions.push_back({ control_ins::jmp,ptr });
 	}
 
 	void parse_tag() {
 		set_tag(extract_word());
 	}
+	void parse_iffalse()
+	{
+		std::string condition = extract_word();
+		index_type con_pos = find_pos(condition.substr(1));
+		char * ins = new char[sizeof(index_type) + 4];
+		*(index_type*)ins = con_pos;
+		// parsing tag
+		std::string tag_name = extract_word();
+		int jmp_pos = get_tag_pos(tag_name);
+		if (jmp_pos == -1)
+		{
+			_indefinate_tag_table[tag_name].push_back(ins + sizeof(index_type));
+		}
+		*(index_type*)(ins + sizeof(index_type)) = jmp_pos;
+		glo_instructions.push_back({ control_ins::iffalse,ins });
+	}
 	void parse_print_str()
 	{
 		while (ir_content[ir_index] == ' ') ir_index++;
 		std::string result = vm::to_string(ir_content, ir_index);
-		char *tmp = new char[result.size()+1];
-		strcpy_s(tmp, result.size() + 1,result.c_str());
+		char *tmp = new char[result.size() + 1];
+		strcpy_s(tmp, result.size() + 1, result.c_str());
 		glo_instructions.push_back({ print_ins::print_str,tmp });
 	}
 
@@ -256,10 +273,11 @@ namespace vm
 			{
 				// the ptr points to a instruction which should store position infomation
 				char * ptr = result->second[i];
-				*(index_type*)ptr = pos;
+				*(int*)ptr = pos-1;
 			}
-			_tag_table.insert({ tag_name,glo_instructions.size() });
 		}
+		_tag_table.insert({ tag_name,glo_instructions.size()-1 });
+
 	}
 
 	int get_tag_pos(const std::string & tag_name)
@@ -369,62 +387,96 @@ namespace vm
 		}
 
 	}
-	char * convert_imm_type(const std::string &type_name, int target_type)
+
+	InsData convert_imm_type(const std::string &type_name, int target_type)
 	{
 		auto type_result = stype_table.find(type_name);
 		if (type_result == stype_table.end())
 			throw Error("invalid type: " + type_name);
 		match(':');
 		int imm_type_idx = type_result->second;
+		// calculate target_type len
+		int target_type_len = pow(2, target_type);
+		if (target_type >= 4)
+			target_type_len /= 8;
+		char *ret = new char[target_type_len];
 		if (imm_type_idx <= INTEGER_TIDX_MAX)
 		{
 			switch (target_type)
 			{
 			case 0:
-				return new char(to_int(extract_word()));
+				*(int8_t*)ret = to_int(extract_word());
+				break;
 			case 1:
-				return (char*)(new int16_t(to_int(extract_word())));
+				*(int16_t*)ret = to_int(extract_word());
+				break;
 			case 2:
-				return (char*)(new int32_t(to_int(extract_word())));
+				*(int32_t*)ret = to_int(extract_word());
+				break;
 			case 3:
-				return (char*)(new int64_t(to_int(extract_word())));
+				*(int64_t*)ret = to_int(extract_word());
+				break;
 			case 4:
-				return (char*)(new float(to_int(extract_word())));
+				*(float*)ret = to_int(extract_word());
+				break;
 			case 5:
-				return (char*)(new double(to_int(extract_word())));
+				*(double*)ret = to_int(extract_word());
+				break;
 			case 6:
-				return (char*)(new long double(to_int(extract_word())));
+				*(long double*)ret = to_int(extract_word());
+				break;
 			default:
 				throw Error("intern_error E1");
 			}
 		}
 		else {
+			// boring copy - paste
 			switch (target_type)
 			{
 			case 0:
-				return new char(to_real(extract_word()));
+				*(int8_t*)ret = to_real(extract_word());
+				break;
 			case 1:
-				return (char*)(new int16_t(to_real(extract_word())));
+				*(int16_t*)ret = to_real(extract_word());
+				break;
 			case 2:
-				return (char*)(new int32_t(to_real(extract_word())));
+				*(int32_t*)ret = to_real(extract_word());
+				break;
 			case 3:
-				return (char*)(new int64_t(to_real(extract_word())));
+				*(int64_t*)ret = to_real(extract_word());
+				break;
 			case 4:
-				return (char*)(new float(to_real(extract_word())));
+				*(float*)ret = to_real(extract_word());
+				break;
 			case 5:
-				return (char*)(new double(to_real(extract_word())));
+				*(double*)ret = to_real(extract_word());
+				break;
 			case 6:
-				return (char*)(new long double(to_real(extract_word())));
+				*(long double*)ret = to_real(extract_word());
+				break;
 			default:
 				throw Error("intern_error E1");
 			}
 		}
+		auto rr= InsData(ret, target_type_len);
+		delete ret;
+		return rr;
 	}
+
 	InsData::InsData(InsData && ins)
 	{
 		info = ins.info;
 		length = ins.length;
 		ins.info = nullptr;
+	}
+	void InsData::push(void * ins, int len)
+	{
+		char *tmp = new char[length +len];
+		memcpy(tmp, info, length);
+		memcpy(tmp + length, ins, len);
+		delete[] info;
+		info = tmp;
+		length += len;
 	}
 	void InsData::push(InsData& rhs)
 	{

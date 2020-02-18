@@ -13,10 +13,11 @@ namespace vm {
 		void write(_Ty value, int p) {
 			*(_Ty*)(content + p) = value;
 		}
-
+		int get_pos()const { return pos; }
 		template<typename _Ty>
 		int push(_Ty value)
 		{
+			check();
 			write(value, pos);
 			pos += sizeof(_Ty);
 			return pos - sizeof(_Ty);
@@ -25,7 +26,7 @@ namespace vm {
 
 		int get_pos() { return pos; }
 		int pc = 0;
-
+		
 	private:
 		void realloc();
 		void check();

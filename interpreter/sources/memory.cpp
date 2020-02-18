@@ -4,14 +4,14 @@ namespace vm
 	Memory mem;
 	Memory::Memory(int sz)
 	{
-		content = new char(2 * sz);
+		content = new char[2 * sz];
 		capacity=2 * sz;
 	}
 	void Memory::realloc()
 	{
 		char *tmp = new char[capacity * 2];
 		memcpy(tmp, content, capacity);
-		delete content;
+		delete[] content;
 		content = tmp;
 		capacity *= 2;
 	}

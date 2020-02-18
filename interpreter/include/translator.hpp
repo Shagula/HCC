@@ -68,7 +68,10 @@ namespace vm {
 	};
 	// to store the bin info of the imm or var add.
 	struct InsData {
-		InsData(char *i, int len) :info(i), length(len) {}
+		InsData(char *i, int len) : length(len) {
+			info = new char[len];
+			memcpy(info, i, len);
+		}
 		template<typename Ty>
 		InsData(const Ty & data) {
 			length = sizeof(data);
@@ -78,6 +81,7 @@ namespace vm {
 		}
 		InsData(const InsData &) = delete;
 		InsData(InsData &&ins);
+		void push(void *ins, int len);
 		void push(InsData&);
 		char *release() {
 			char *tmp = info; info = nullptr; return tmp;
@@ -95,12 +99,13 @@ namespace vm {
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
-	char *convert_imm_type(const std::string&, int target_type);
+	InsData convert_imm_type(const std::string&, int target_type);
 
 	void parse_bin();
 	void parse_decl();
 	void parse_jmp();
 	void parse_tag();
+	void parse_iffalse();
 	void parse_print_str();
 	void parse_print_var();
 

@@ -60,6 +60,7 @@ int main() {
 	using namespace vm;
 	try
 	{
+		//run_hcc();
 		test_ir_translator();
 	}
 	catch (const vm::Error &e)
