@@ -1,6 +1,7 @@
 #include "../include/translator.hpp"
 #include "../include/instructions.hpp"
 #include "../include/word_table.hpp"
+#include "../include/memory.hpp"
 #include <string>
 #include <cstring>
 namespace hcc
@@ -31,7 +32,7 @@ namespace vm
 		pos++;
 		return value;
 	}
-
+	
 	//===============================externs=============================
 
 	namespace print_ins {
@@ -56,6 +57,8 @@ namespace vm
 	instruction_type gen_covert_op(char t1, char t2);
 	index_type find_pos(const std::string &var_name);
 	//=============================== vars===============================
+	bool function_begin=false;
+	int function_ret_type;
 	std::string ir_content;
 	int cur_pos = 0;
 	int ir_index = 0;
@@ -63,7 +66,8 @@ namespace vm
 	std::map<std::string, void(*)()> parsing_table{
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
 		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl },
-		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var},{"iffalse",parse_iffalse}
+		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var},{"iffalse",parse_iffalse},
+		{"begin",parse_begin_or_end},{"end",parse_begin_or_end},{"function",parse_function}
 	};
 	std::map<std::string, int> _tag_table;
 	std::map<std::string, std::vector<char *>>_indefinate_tag_table;
@@ -129,7 +133,7 @@ namespace vm
 		std::string var_name = extract_word().substr(1);
 		int pos = cur_pos;
 		cur_pos += type_result->second.second / 8;
-		var_type_table.insert({ var_name, VarInfo(type_result->second.first, pos) });
+		push_new_symbol( var_name,type_result->second.first, pos);
 
 		int byte_count = type_result->second.second / 8;
 
@@ -263,6 +267,49 @@ namespace vm
 		glo_instructions.push_back({ print_ins::print_int_var,tmp });
 	}
 
+	void parse_begin_or_end()
+	{
+		if (cur_instruction == "begin")
+			if (function_begin)
+				function_begin = false;
+			else
+			{
+				mem.new_block();
+				var_symbol_table.push_back({});
+			}
+		else
+		{
+			var_symbol_table.pop_back();
+			mem.end_block();
+		}
+	}
+
+	void parse_function()
+	{
+		std::string func_name = extract_word();
+		std::string type_name = extract_word();
+		function_ret_type = find_type_info(type_name).first;
+		function_begin = true;
+		// begin the block before in order to include the arguments to the block
+		mem.new_block();
+		var_symbol_table.push_back({});
+		//=================parsing arguments==================================
+		std::vector<std::pair<std::string, std::pair<int,int>>> args_info;
+		while (ir_content[ir_index] != ')')
+		{
+			std::string arg_name = extract_word();
+			match(':');
+			auto arg_type_info = find_type_info(extract_word());
+			args_info.push_back({ arg_name,{arg_type_info,arg_type_info.second / 8 } });
+		}
+		int cnt = 0;
+		for (int i = args_info.size() - 1; i >= 0; i--)
+		{
+			cnt -= args_info[i].second.second;
+			push_new_symbol(args_info[i].first, args_info[i].second.first,cnt );
+		}
+	}
+
 	void set_tag(const std::string & tag_name)
 	{
 		if (_indefinate_tag_table.count(tag_name))
@@ -386,6 +433,14 @@ namespace vm
 			throw vm::Error("type error or the version is too slow to support the new type.");
 		}
 
+	}
+	// first-> type_idx second->type_length
+	std::pair<int, int> find_type_info(const std::string &tn)
+	{
+		auto result = type_name_info_table.find(tn);
+		if (result == type_name_info_table.end())
+			throw Error("intern-error E7 type " + tn + " invalid type");
+		return result->second;
 	}
 
 	InsData convert_imm_type(const std::string &type_name, int target_type)

@@ -51,7 +51,7 @@ namespace hcc
 		tmp += "(function " + func_info->get_func_name() + " " + func_info->get_type()->to_string() + " ";
 		for (auto a : func_info->argument) {
 			// Yip 
-			tmp += a.first + "->" + a.second->to_string() + ",)"[a==func_info->argument.back()];
+			tmp += a.first + ":" + a.second->to_string() + " )"[a==func_info->argument.back()];
 		}
 		if (func_info->argument.empty())tmp += ")";
 		instructions.push_back(tmp);

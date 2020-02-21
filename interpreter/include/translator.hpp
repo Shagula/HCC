@@ -43,6 +43,9 @@ namespace vm {
 	};
 
 	extern std::string ir_content;
+	// to ignore the begin following the function def.
+	extern bool function_begin;
+	extern int function_ret_type;
 	extern int ir_index;
 	extern int line_no;
 	extern int cur_pos;
@@ -99,6 +102,8 @@ namespace vm {
 	void parsing();
 	std::string extract_word();
 	std::pair<char, InsData> process_unit();
+	// first-> type_idx second->type_length
+	std::pair<int, int> find_type_info(const std::string &tn);
 	InsData convert_imm_type(const std::string&, int target_type);
 
 	void parse_bin();
@@ -108,6 +113,8 @@ namespace vm {
 	void parse_iffalse();
 	void parse_print_str();
 	void parse_print_var();
+	void parse_begin_or_end();
+	void parse_function();
 
 	void set_tag(const std::string &tag_name);
 	// -1: tag no found

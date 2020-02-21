@@ -26,8 +26,15 @@ namespace vm {
 
 		int get_pos() { return pos; }
 		int pc = 0;
-		
+		// they will call during parsing
+		void new_block() { block_info.push_back(pc); }
+		void end_block() { pc = block_info.back(); block_info.pop_back(); }
+		// they will call during the runtime
+		void new_func() { /*TO DO*/ }
+		void end_func() {   /*TO DO*/ }
 	private:
+		std::vector<size_t> block_info;
+		std::vector<size_t> call_stack;
 		void realloc();
 		void check();
 		char *content;
