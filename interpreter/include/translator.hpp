@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <iostream>
 #include <map>
 #include <vector>
@@ -52,6 +52,8 @@ namespace vm {
 	extern std::map<std::string, void(*)()> parsing_table;
 	extern std::map<std::string, int> _tag_table;
 	extern std::map<std::string, std::vector<char *>>_indefinate_tag_table;
+	// to find the first instruction of a function
+	extern std::map<std::string, int> function_address_table;
 	extern std::string cur_instruction; // cur instruction name
 	// the max idx of the integer type in an effort to distinguish if the type is integer
 	const int INTEGER_TIDX_MAX = 3;
@@ -71,13 +73,15 @@ namespace vm {
 	};
 	// to store the bin info of the imm or var add.
 	struct InsData {
+		InsData() = delete;
 		InsData(char *i, int len) : length(len) {
 			info = new char[len];
 			memcpy(info, i, len);
 		}
+		// I can't get across that when I call InsData(123);, the following function doesn't work, instead, the InsData(InsData && ins) is called;
 		template<typename Ty>
-		InsData(const Ty & data) {
-			length = sizeof(data);
+		InsData(const Ty &data) {
+			length = sizeof(Ty);
 			info = new char[length];
 			for (int i = 0; i < length; i++)
 				info[i] = ((char*)(&data))[i];
@@ -95,6 +99,13 @@ namespace vm {
 			if (info != nullptr)
 				delete[] info;
 		}
+		template<typename Ty>
+		static InsData CreateInsData(const Ty&data) {
+			std::cout << "日常闹鬼";
+			int len = sizeof(Ty);
+			InsData ret((char*)&data, len);
+			return ret;
+		}
 	};
 	//======================================================
 	void set_tag(const std::string &tag_name);
@@ -104,8 +115,10 @@ namespace vm {
 	std::pair<char, InsData> process_unit();
 	// first-> type_idx second->type_length
 	std::pair<int, int> find_type_info(const std::string &tn);
+	int get_type_length(int ty_idx);
 	InsData convert_imm_type(const std::string&, int target_type);
-
+	void parse_ret();
+	void parse_push();
 	void parse_bin();
 	void parse_decl();
 	void parse_jmp();
@@ -115,6 +128,7 @@ namespace vm {
 	void parse_print_var();
 	void parse_begin_or_end();
 	void parse_function();
+	void parse_calll();
 
 	void set_tag(const std::string &tag_name);
 	// -1: tag no found

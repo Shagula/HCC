@@ -48,8 +48,19 @@ namespace vm
 		void write_t_16(char * ins);
 		void write_t_32(char *ins);
 		void write_t_64(char *ins);
+
+		void writevb(char *ins);
+		void writevw(char *ins);
+		void writevq(char *ins);
+		void writevo(char *ins);
+
+		void write_imm_b(char *ins);
+		void write_imm_w(char *ins);
+		void write_imm_q(char *ins);
+		void write_imm_o(char *ins);
 	}
 	namespace  control_ins {
+		void call(char *ins);
 		void jmp(char *ins);
 		void iffalse(char *ins);
 	}
@@ -67,7 +78,7 @@ namespace vm
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
 		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl },
 		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var},{"iffalse",parse_iffalse},
-		{"begin",parse_begin_or_end},{"end",parse_begin_or_end},{"function",parse_function}
+		{"begin",parse_begin_or_end},{"end",parse_begin_or_end},{"function",parse_function},{"push",parse_push},{"ret",parse_ret}
 	};
 	std::map<std::string, int> _tag_table;
 	std::map<std::string, std::vector<char *>>_indefinate_tag_table;
@@ -123,7 +134,61 @@ namespace vm
 		// load instruction.
 		glo_instructions.push_back({ ins, op1.second.release() });
 	}
-
+	void parse_push () {
+		// bin_op factor
+		int pos = cur_pos;
+		if (ir_content[ir_index] == '%')
+		{
+			std::string rhs_var_name = extract_word().substr(1);
+			auto rhs_t = find_type(rhs_var_name);
+			char * ins = new char[sizeof(index_type)];
+			memset(ins, find_pos(rhs_var_name), sizeof(index_type));
+			int byte_count = get_type_length(rhs_t);
+			cur_pos += get_type_length(rhs_t);
+			// write var from ache
+			switch (byte_count)
+			{
+			case 1:
+				glo_instructions.push_back({ write_ins::write_t_8,nullptr });
+				return;
+			case 2:
+				glo_instructions.push_back({ write_ins::write_t_16,nullptr });
+				return;
+			case 4:
+				glo_instructions.push_back({ write_ins::write_t_32,nullptr });
+				return;
+			case 8:
+				glo_instructions.push_back({ write_ins::write_t_64,nullptr });
+				return;
+			default:
+				throw Error("intern_error E3 unknown type length "+std::to_string(byte_count));
+				break;
+			}
+			return;
+		}
+		InsData ins = process_unit();
+		int byte_count = ins.length;
+		cur_pos += byte_count;
+		ins.push(new int(pos), sizeof(pos));
+		switch (byte_count)
+		{
+		case 1:
+			glo_instructions.push_back({ write_ins::write_8,ins.release() });
+			return;
+		case 2:
+			glo_instructions.push_back({ write_ins::write_16,ins.release() });
+			return;
+		case 4:
+			glo_instructions.push_back({ write_ins::write_32,ins.release() });
+			return;
+		case 8:
+			glo_instructions.push_back({ write_ins::write_64,ins.release() });
+			return;
+		default:
+			throw Error("intern_error E3 unknown type length " + std::to_string(byte_count));
+			break;
+		}
+	}
 	void parse_decl()
 	{
 		auto type_result = type_name_info_table.find(cur_instruction);
@@ -171,7 +236,7 @@ namespace vm
 			std::string rhs_var_name = extract_word().substr(1);
 			char * ins = new char[sizeof(index_type)];
 			memset(ins, find_pos(rhs_var_name), sizeof(index_type));
-			// convert to ache
+			// convert to cache
 			glo_instructions.push_back({ gen_covert_op(find_type(rhs_var_name),type_result->second.first),ins });
 			// write var from ache
 			switch (byte_count)
@@ -288,6 +353,7 @@ namespace vm
 	{
 		std::string func_name = extract_word();
 		std::string type_name = extract_word();
+		function_address_table.insert({ func_name,glo_instructions.size() - 1 });
 		function_ret_type = find_type_info(type_name).first;
 		function_begin = true;
 		// begin the block before in order to include the arguments to the block
@@ -300,7 +366,7 @@ namespace vm
 			std::string arg_name = extract_word();
 			match(':');
 			auto arg_type_info = find_type_info(extract_word());
-			args_info.push_back({ arg_name,{arg_type_info,arg_type_info.second / 8 } });
+			args_info.push_back({ arg_name,{arg_type_info.first,arg_type_info.second / 8} });
 		}
 		int cnt = 0;
 		for (int i = args_info.size() - 1; i >= 0; i--)
@@ -308,6 +374,18 @@ namespace vm
 			cnt -= args_info[i].second.second;
 			push_new_symbol(args_info[i].first, args_info[i].second.first,cnt );
 		}
+	}
+
+	void parse_calll()
+	{
+		std::string func_name = extract_word();
+		auto result = function_address_table.find(func_name);
+		if (result == function_address_table.end())
+			throw Error("intern-error E7 function " + func_name + " hasn't been defined");
+		char *ins = new char[sizeof(int) + sizeof(int)];
+		memcpy(ins, &cur_pos, 0);
+		memcpy(ins, &(result->second), sizeof(int));
+		glo_instructions.push_back({ control_ins::call,ins });
 	}
 
 	void set_tag(const std::string & tag_name)
@@ -414,13 +492,16 @@ namespace vm
 		// store the unit info( var or imm) in 5ed bit.
 		match(':');
 		unit = extract_word();
+		InsData ret(0);
 		switch (type) {
 		case 0:
 			return { type,InsData((int8_t)to_int(unit)) };
 		case 1:
 			return { type,InsData((int16_t)to_int(unit)) };
 		case 2:
-			return { type,InsData((int32_t)to_int(unit)) };
+			ret.length = 4;
+			*(int32_t*)ret.info = (int32_t)to_int(unit);
+			return { type,std::move(ret) };
 		case 3:
 			return { type,InsData((int64_t)to_int(unit)) };
 		case 4:
@@ -441,6 +522,13 @@ namespace vm
 		if (result == type_name_info_table.end())
 			throw Error("intern-error E7 type " + tn + " invalid type");
 		return result->second;
+	}
+
+	int get_type_length(int ty_idx)
+	{
+		if (ty_idx <= INTEGER_TIDX_MAX)
+			return pow(2, ty_idx);
+		return pow(2, ty_idx - 2);
 	}
 
 	InsData convert_imm_type(const std::string &type_name, int target_type)
@@ -516,6 +604,26 @@ namespace vm
 		auto rr= InsData(ret, target_type_len);
 		delete ret;
 		return rr;
+	}
+
+	void parse_ret()
+	{
+		std::string info = extract_word();
+		// return a variable
+		if (info[0] == '%')
+		{
+			info = info.substr(1);
+			int pos = find_pos(info);
+			int len = get_type_length(find_type(info));
+			std::map<int, void(*)(char*)> ret_func_table{{1,write_ins::writevb},{2,write_ins::writevw},{4,write_ins::writevq},{8,write_ins::writevo}};
+			char *ins = new char[sizeof(index_type)];
+			memcpy(ins, &len, sizeof(index_type));
+			glo_instructions.push_back({ ret_func_table[len],ins });
+			return;
+		}
+		auto unit_info = process_unit();
+		std::map<int, void(*)(char*)> ret_func_table_ex{ { 1,write_ins::write_imm_b },{ 2,write_ins::write_imm_w },{ 4,write_ins::write_imm_q },{ 8,write_ins::write_imm_o } };
+		glo_instructions.push_back({ ret_func_table_ex[unit_info.second.length],unit_info.second.release() });
 	}
 
 	InsData::InsData(InsData && ins)

@@ -1,6 +1,7 @@
 #include "../include/instructions.hpp"
 #include "../include/translator.hpp"
 #include "../include/memory.hpp"
+#include "../include/word_table.hpp"
 namespace vm
 {
 	//===================== def vars===============
@@ -10,6 +11,7 @@ namespace vm
 	//=============================================
 	void run()
 	{
+		pc = find_func_address("main")+1;
 		while (pc < glo_instructions.size())
 		{
 			glo_instructions[pc].first(glo_instructions[pc].second);
@@ -17,11 +19,21 @@ namespace vm
 		}
 	}
 	namespace write_ins {
+		// write to temp
+		void writevb(char *ins) { intern_result_buf[0] = mem.extract<char>(*(index_type*)ins); }
+		void writevw(char *ins) {memcpy(intern_result_buf, mem[ins],2); }
+		void writevq(char *ins) { memcpy(intern_result_buf, mem[ins], 4); }
+		void writevo(char *ins) { memcpy(intern_result_buf, mem[ins], 8); }
+
+		void write_imm_b(char *ins) { intern_result_buf[0] = *ins; }
+		void write_imm_w(char *ins) { memcpy(intern_result_buf, ins, 2); }
+		void write_imm_q(char *ins) { memcpy(intern_result_buf, ins, 4); }
+		void write_imm_o(char *ins) { memcpy(intern_result_buf, ins, 8); }
 		//write data from a position
-		void write_p_8(char *ins) { mem.push(mem.extract<char>(*(index_type*)ins)); }
-		void write_p_16(char *ins) { mem.push(mem.extract<int16_t>(*(index_type*)ins)); }
-		void write_p_32(char *ins) { mem.push(mem.extract<int32_t>(*(index_type*)ins)); }
-		void write_p_64(char *ins) { mem.push(mem.extract<int64_t>(*(index_type*)ins)); }
+		void write_p_8(char *ins) { mem.write(*ins,mem.extract<char>(*(index_type*)ins+sizeof(index_type))); }
+		void write_p_16(char *ins) { mem.write(*ins, mem.extract<int16_t>(*(index_type*)ins + sizeof(index_type))); }
+		void write_p_32(char *ins) { mem.write(*ins, mem.extract<int32_t>(*(index_type*)ins + sizeof(index_type))); }
+		void write_p_64(char *ins) { mem.write(*ins, mem.extract<int64_t>(*(index_type*)ins + sizeof(index_type))); }
 		// write imm data
 		void write_8(char *ins) {
 			mem.write(*ins,*(index_type*)(ins+1));
@@ -1399,6 +1411,11 @@ namespace vm
 	}
 	// control
 	namespace  control_ins{
+		void call(char *ins) {
+			mem.new_func(*(int*)ins);
+			pc = *(int*)(ins + sizeof(int));
+			mem.end_func();
+		}
 		void jmp(char *ins) {
 			pc = *(int*)ins;
 		}

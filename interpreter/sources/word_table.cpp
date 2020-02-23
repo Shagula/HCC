@@ -13,21 +13,27 @@ namespace vm
 	}
 	int find_type(const std::string & var_name)
 	{
-		auto result = var_symbol_table.back().find(var_name);
-		if (result == var_symbol_table.back().end())
-			return -1;
-		return result->second.type;
+		for (int i = var_symbol_table.size() - 1; i >= 0; i--)
+		{
+			auto result = var_symbol_table[i].find(var_name);
+			if (result != var_symbol_table[i].end())
+				return result->second.type;
+		}
+		return -1;
 	}
 
 	index_type find_pos(const std::string & var_name)
 	{
-		auto result = var_symbol_table.back().find(var_name);
-		if (result == var_symbol_table.back().end())
-			return -1;
-		return result->second.pos;
+		for (int i = var_symbol_table.size() - 1; i >= 0; i--)
+		{
+			auto result = var_symbol_table[i].find(var_name);
+			if (result != var_symbol_table[i].end())
+				return result->second.pos;
+		}
+		return -1;
 	}
 
-	void push_new_symbol(std::string name,int type, int pos)
+	void push_new_symbol(std::string name, int type, int pos)
 	{
 		var_symbol_table.back().insert({ name,VarInfo(type, pos) });
 	}
