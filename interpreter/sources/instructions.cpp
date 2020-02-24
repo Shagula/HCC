@@ -1411,10 +1411,11 @@ namespace vm
 	}
 	// control
 	namespace  control_ins{
+		std::vector<int> pc_call_stack;
 		void call(char *ins) {
 			mem.new_func(*(int*)ins);
+			pc_call_stack.push_back(pc);
 			pc = *(int*)(ins + sizeof(int));
-			mem.end_func();
 		}
 		void jmp(char *ins) {
 			pc = *(int*)ins;
@@ -1424,6 +1425,12 @@ namespace vm
 			{
 				pc = *(int*)(ins + sizeof(index_type));
 			}
+		}
+		void ret(char * ins)
+		{
+			mem.end_func();
+			pc = pc_call_stack.back();
+			pc_call_stack.pop_back();
 		}
 	}
 	instruction_type gen_covert_op(char t1, char t2)

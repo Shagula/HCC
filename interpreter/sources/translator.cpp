@@ -63,6 +63,7 @@ namespace vm
 		void call(char *ins);
 		void jmp(char *ins);
 		void iffalse(char *ins);
+		void ret(char *ins);
 	}
 	int find_type(const std::string &var_name);
 	instruction_type gen_covert_op(char t1, char t2);
@@ -78,7 +79,8 @@ namespace vm
 		{"+=",parse_bin },{"-=",parse_bin},{ "*=",parse_bin },{ "/=",parse_bin },{"=",parse_bin},
 		{"int",parse_decl},{"char",parse_decl},{"long",parse_decl },{"float",parse_decl },{"double",parse_decl },
 		{"jmp",parse_jmp},{"tag",parse_tag},{"print",parse_print_str},{"print_var",parse_print_var},{"iffalse",parse_iffalse},
-		{"begin",parse_begin_or_end},{"end",parse_begin_or_end},{"function",parse_function},{"push",parse_push},{"ret",parse_ret}
+		{"begin",parse_begin_or_end},{"end",parse_begin_or_end},{"function",parse_function},{"push",parse_push},{"ret",parse_ret},
+		{"call",parse_call}
 	};
 	std::map<std::string, int> _tag_table;
 	std::map<std::string, std::vector<char *>>_indefinate_tag_table;
@@ -166,7 +168,7 @@ namespace vm
 			}
 			return;
 		}
-		InsData ins = process_unit();
+		InsData ins = process_unit().second;
 		int byte_count = ins.length;
 		cur_pos += byte_count;
 		ins.push(new int(pos), sizeof(pos));
@@ -376,15 +378,15 @@ namespace vm
 		}
 	}
 
-	void parse_calll()
+	void parse_call()
 	{
 		std::string func_name = extract_word();
 		auto result = function_address_table.find(func_name);
 		if (result == function_address_table.end())
 			throw Error("intern-error E7 function " + func_name + " hasn't been defined");
 		char *ins = new char[sizeof(int) + sizeof(int)];
-		memcpy(ins, &cur_pos, 0);
-		memcpy(ins, &(result->second), sizeof(int));
+		memcpy(ins, &cur_pos, sizeof(int));
+		memcpy(ins+sizeof(int), &(result->second), sizeof(int));
 		glo_instructions.push_back({ control_ins::call,ins });
 	}
 
@@ -492,16 +494,13 @@ namespace vm
 		// store the unit info( var or imm) in 5ed bit.
 		match(':');
 		unit = extract_word();
-		InsData ret(0);
 		switch (type) {
 		case 0:
 			return { type,InsData((int8_t)to_int(unit)) };
 		case 1:
 			return { type,InsData((int16_t)to_int(unit)) };
 		case 2:
-			ret.length = 4;
-			*(int32_t*)ret.info = (int32_t)to_int(unit);
-			return { type,std::move(ret) };
+			return { type,InsData((int32_t)to_int(unit)) };
 		case 3:
 			return { type,InsData((int64_t)to_int(unit)) };
 		case 4:
@@ -608,17 +607,17 @@ namespace vm
 
 	void parse_ret()
 	{
-		std::string info = extract_word();
 		// return a variable
-		if (info[0] == '%')
+		if (ir_content[ir_index] == '%')
 		{
-			info = info.substr(1);
+			std::string info = extract_word().substr(1);
 			int pos = find_pos(info);
 			int len = get_type_length(find_type(info));
 			std::map<int, void(*)(char*)> ret_func_table{{1,write_ins::writevb},{2,write_ins::writevw},{4,write_ins::writevq},{8,write_ins::writevo}};
 			char *ins = new char[sizeof(index_type)];
 			memcpy(ins, &len, sizeof(index_type));
 			glo_instructions.push_back({ ret_func_table[len],ins });
+			glo_instructions.push_back({ control_ins::ret,nullptr });
 			return;
 		}
 		auto unit_info = process_unit();

@@ -128,7 +128,7 @@ namespace vm {
 	void parse_print_var();
 	void parse_begin_or_end();
 	void parse_function();
-	void parse_calll();
+	void parse_call();
 
 	void set_tag(const std::string &tag_name);
 	// -1: tag no found
